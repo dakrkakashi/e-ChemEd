@@ -1,0 +1,243 @@
+/**
+ * e-chemEd Design System Tokens
+ * "Printed textbook meets lab notebook" aesthetic
+ * Fully accessible (WCAG 2.1 AA & AAA compliant), flat editorial palette
+ */
+
+:root,
+[data-theme="light"] {
+  color-scheme: light;
+
+  /* --- Brand Primitives: Lab Ink & Earth Tones --- */
+  --ink-950: #10100f;
+  --ink-900: #1c1b1a; /* Dark ink for primary text */
+  --ink-800: #2d2b29;
+  --ink-700: #44403c; /* Secondary text */
+  --ink-600: #615d56; /* Muted text (>= 6.1:1 AA) */
+  --ink-500: #8a847a; /* Form controls & prominent borders (>= 3.4:1) */
+  --ink-400: #b0a99e;
+  --ink-300: #d6d0c5;
+  --ink-200: #e8e3da; /* Hairline dividers */
+  --ink-100: #f2efe9;
+  --ink-50: #faf7f2;  /* Warm paper background */
+
+  /* Main Accent: Deep Ink-Blue */
+  --color-primary-900: #0d202f;
+  --color-primary-800: #112b3f;
+  --color-primary-700: #183b56; /* Primary deep ink-blue (10.9:1 on paper) */
+  --color-primary-600: #214b6c;
+  --color-primary-500: #2d628c;
+  --color-primary-100: #e6eef5;
+  --color-primary-50:  #f3f7fa;
+
+  /* Secondary Accent: Warm Terracotta / Brick (used sparingly) */
+  --color-secondary-800: #732615;
+  --color-secondary-700: #82321e;
+  --color-secondary-600: #9c3d27; /* Warm brick (6.3:1 on paper) */
+  --color-secondary-500: #b54a32;
+  --color-secondary-100: #f7ebe6;
+  --color-secondary-50:  #fcf5f2;
+
+  /* --- Unit Specific Accent Colors (Desaturated Academic Hues) --- */
+  /* Unit 1: Water Processing And Environmental Sustainability */
+  --unit-1: #0f5b66;
+  --unit-1-bg: #e6f0f2;
+  --unit-1-border: #9bc0c7;
+
+  /* Unit 2: Electrochemical Energy Storage Systems */
+  --unit-2: #8c4a00;
+  --unit-2-bg: #f7efe6;
+  --unit-2-border: #d9b38c;
+
+  /* Unit 3: Flexible Electronics & Optoelectronic Materials */
+  --unit-3: #6b2d5c;
+  --unit-3-bg: #f4ebf1;
+  --unit-3-border: #caa7c0;
+
+  /* Unit 4: Nanomaterials, Electrochemistry & Thermal Analysis */
+  --unit-4: #1e5330;
+  --unit-4-bg: #eaf2ec;
+  --unit-4-border: #9dc4ab;
+
+  /* Unit 5: Energy Generation & Sustainable Fuels */
+  --unit-5: #8b1e3f;
+  --unit-5-bg: #f7ebf0;
+  --unit-5-border: #d6a3b5;
+
+  /* --- Typography --- */
+  --font-display: 'Newsreader', Georgia, 'Times New Roman', serif;
+  --font-body: 'Instrument Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  /* Typescale (1.25 Major Third scale) */
+  --text-xs: 0.75rem;                       /* 12px */
+  --text-sm: 0.875rem;                      /* 14px */
+  --text-base: 1rem;                         /* 16px */
+  --text-lg: 1.125rem;                      /* 18px */
+  --text-xl: 1.25rem;                       /* 20px */
+  --text-2xl: 1.5625rem;                    /* 25px */
+  --text-3xl: 1.953rem;                     /* 31.25px */
+  --text-4xl: clamp(2rem, 3.2vw, 2.441rem); /* ~39px */
+  --text-5xl: clamp(2.35rem, 4.5vw, 3.05rem);/* ~48px */
+
+  --leading-none: 1.15;
+  --leading-tight: 1.25;
+  --leading-snug: 1.4;
+  --leading-normal: 1.6;
+  --leading-relaxed: 1.65;
+
+  /* Tracking */
+  --tracking-tight: -0.02em;
+  --tracking-normal: 0em;
+  --tracking-label: 0.04em;
+
+  /* --- Spacing --- */
+  --space-0-5: 0.125rem; /* 2px */
+  --space-1: 0.25rem;    /* 4px */
+  --space-2: 0.5rem;     /* 8px */
+  --space-3: 0.75rem;    /* 12px */
+  --space-4: 1rem;       /* 16px */
+  --space-5: 1.25rem;    /* 20px */
+  --space-6: 1.5rem;     /* 24px */
+  --space-8: 2rem;       /* 32px */
+  --space-10: 2.5rem;    /* 40px */
+  --space-12: 3rem;      /* 48px */
+  --space-16: 4rem;      /* 64px */
+  --space-20: 5rem;      /* 80px */
+
+  /* --- Flat Geometry (Small 4-8px Radii, Hairline Borders) --- */
+  --radius-xs: 3px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 8px;
+  --radius-full: 9999px;
+
+  /* --- Transitions (Restrained, subtle) --- */
+  --transition-fast: 120ms ease;
+  --transition-normal: 200ms ease;
+  --transition-slow: 300ms ease;
+
+  /* --- Max Layout Width --- */
+  --container-max: 1200px;
+  --container-narrow: 840px;
+
+  /* --- Mobile Safe Area & Touch Ergonomics --- */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --touch-target-min: 44px;
+
+  /* --- Light Theme (Default: Warm Printed Textbook) --- */
+  --bg-page: #faf7f2;               /* Warm off-white paper */
+  --bg-surface: #ffffff;            /* Pure white cards */
+  --bg-surface-elevated: #ffffff;
+  --bg-subtle: #f2efe9;             /* Faint warm tint */
+  --bg-muted: #e8e3da;
+
+  /* Borders: Hairline structural + Accessible UI Controls */
+  --border-light: #e8e3da;          /* 1px faint divider */
+  --border-medium: #d6d0c5;         /* Card border */
+  --border-strong: #b0a99e;
+  --border-control: #8a847a;        /* >= 3:1 for inputs, buttons & controls */
+
+  --text-main: #1c1b1a;             /* Dark ink */
+  --text-secondary: #44403c;        /* Readable ink secondary */
+  --text-muted: #615d56;            /* >= 6.1:1 contrast */
+  --text-inverse: #faf7f2;
+
+  --nav-bg: #faf7f2;                /* Solid paper nav (no glassmorphism) */
+  --nav-border: #e8e3da;
+
+  /* Shadows: Minimal flat design (no glow) */
+  --shadow-sm: 0 1px 2px rgba(28, 27, 26, 0.04);
+  --shadow-md: 0 2px 4px rgba(28, 27, 26, 0.06);
+  --shadow-lg: 0 4px 10px rgba(28, 27, 26, 0.08);
+  --shadow-xl: 0 8px 16px rgba(28, 27, 26, 0.08);
+  --shadow-card-hover: 0 2px 6px rgba(28, 27, 26, 0.08);
+
+  --brand-primary: #183b56;         /* Deep ink-blue */
+  --brand-primary-hover: #112b3f;
+  --brand-primary-text: #ffffff;
+  --brand-accent: #9c3d27;          /* Warm brick secondary */
+  --brand-accent-hover: #82321e;
+  --brand-accent-text: #ffffff;
+
+  --badge-live-bg: #eaf2ec;
+  --badge-live-text: #1e5330;
+  --badge-soon-bg: #f2efe9;
+  --badge-soon-text: #44403c;
+}
+
+/* --- Dark Theme (Manual Toggle: Warm Graphite & Charcoal) --- */
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --bg-page: #181716;               /* Warm charcoal base */
+  --bg-surface: #22201d;            /* Warm dark slate cards */
+  --bg-surface-elevated: #282522;
+  --bg-subtle: #2a2724;
+  --bg-muted: #383430;
+
+  --border-light: #2e2b27;
+  --border-medium: #3d3934;
+  --border-strong: #524d46;
+  --border-control: #857d71;        /* >= 3:1 against dark surface */
+
+  --text-main: #ede8df;             /* Warm off-white ink */
+  --text-secondary: #bcb6aa;        /* Secondary body text */
+  --text-muted: #a69f93;            /* Muted captions (>= 6.3:1) */
+  --text-inverse: #181716;
+
+  --nav-bg: #181716;
+  --nav-border: #2e2b27;
+
+  --shadow-sm: none;
+  --shadow-md: 0 2px 4px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 4px 8px rgba(0, 0, 0, 0.4);
+  --shadow-xl: 0 8px 16px rgba(0, 0, 0, 0.45);
+  --shadow-card-hover: 0 2px 6px rgba(0, 0, 0, 0.4);
+
+  --brand-primary: #5ea8c9;         /* Warm steel blue */
+  --brand-primary-hover: #79b8d4;
+  --brand-primary-text: #051018;
+  --brand-accent: #de8368;          /* Warm terracotta secondary */
+  --brand-accent-hover: #e79b84;
+  --brand-accent-text: #181716;
+
+  --badge-live-bg: rgba(94, 174, 123, 0.18);
+  --badge-live-text: #76cca5;
+  --badge-soon-bg: #2a2724;
+  --badge-soon-text: #bcb6aa;
+
+  --unit-1: #4db5c4;
+  --unit-1-bg: rgba(77, 181, 196, 0.14);
+  --unit-1-border: rgba(77, 181, 196, 0.35);
+
+  --unit-2: #e09e53;
+  --unit-2-bg: rgba(224, 158, 83, 0.14);
+  --unit-2-border: rgba(224, 158, 83, 0.35);
+
+  --unit-3: #b876a9;
+  --unit-3-bg: rgba(184, 118, 169, 0.14);
+  --unit-3-border: rgba(184, 118, 169, 0.35);
+
+  --unit-4: #5eae7b;
+  --unit-4-bg: rgba(94, 174, 123, 0.14);
+  --unit-4-border: rgba(94, 174, 123, 0.35);
+
+  --unit-5: #de6d88;
+  --unit-5-bg: rgba(222, 109, 136, 0.14);
+  --unit-5-border: rgba(222, 109, 136, 0.35);
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

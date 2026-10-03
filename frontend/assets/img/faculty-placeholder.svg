@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200" role="img" aria-label="Faculty profile placeholder">
+  <defs>
+    <linearGradient id="avatarBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#E8E3D9" />
+      <stop offset="100%" stop-color="#D6CEBE" />
+    </linearGradient>
+    <linearGradient id="avatarSilhouette" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#183B56" />
+      <stop offset="100%" stop-color="#0E2333" />
+    </linearGradient>
+  </defs>
+  <rect width="200" height="200" fill="url(#avatarBg)" rx="8" />
+  <!-- Academic Cap / Subdued Ribbon Indicator -->
+  <path d="M100 32 L145 48 L100 64 L55 48 Z" fill="#183B56" opacity="0.9" />
+  <path d="M140 52 L140 76" stroke="#C49B45" stroke-width="2.5" stroke-linecap="round" />
+  <circle cx="140" cy="78" r="3" fill="#C49B45" />
+  <!-- Head Silhouette -->
+  <circle cx="100" cy="85" r="32" fill="url(#avatarSilhouette)" />
+  <!-- Shoulders & Bust Silhouette -->
+  <path d="M46 168 C46 128, 72 122, 100 122 C128 122, 154 128, 154 168 Z" fill="url(#avatarSilhouette)" />
+  <!-- Subtle Collar Notch -->
+  <polygon points="100,124 93,138 107,138" fill="#FAF7F2" opacity="0.95" />
+</svg>

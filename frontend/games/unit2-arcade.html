@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Unit 2 Electrochemical Chem-Arcade Suite — e-chemEd | Sanjivani COE</title>
+  
+  <meta name="description" content="Engaging 3-module electrochemical arcade: Battery & Solar Matchmaker, Electrochemical Cell Builder, and Circuit Tycoon trivia with live microgrid simulation.">
+  <link rel="icon" type="image/svg+xml" href="../assets/img/favicon.svg">
+
+  <!-- Core Design System CSS -->
+  <link rel="stylesheet" href="../assets/css/tokens.css">
+  <link rel="stylesheet" href="../assets/css/base.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/pages/games.css">
+</head>
+<body>
+
+  <!-- Shared Header -->
+  <header id="site-header"></header>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <div class="container" style="max-width: 1140px;">
+      
+      <!-- Breadcrumbs -->
+      <nav class="breadcrumbs" aria-label="Breadcrumb">
+        <a href="../index.html">Home</a>
+        <span class="breadcrumb-separator">/</span>
+        <a href="../pages/games.html">Games Hub</a>
+        <span class="breadcrumb-separator">/</span>
+        <span class="breadcrumb-current">Unit 2 Chem-Arcade</span>
+      </nav>
+
+      <!-- Arcade Top HUD Bar -->
+      <div class="arcade-header-bar">
+        <div class="flex items-center gap-3">
+          <div style="width:40px; height:40px; border-radius:var(--radius-sm); background-color:var(--brand-accent); display:flex; align-items:center; justify-content:center; color:#ffffff; font-weight:800;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+          </div>
+          <div>
+            <h2 style="font-size:var(--text-base); font-weight:800; margin:0; line-height:1.2;">CHEM-ARCADE // Unit 2</h2>
+            <p class="text-xs text-muted" style="margin:0;">Batteries, Solar PV &amp; Supercapacitors</p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-3 flex-wrap">
+          <span class="badge badge-live">
+            <span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:#10b981; margin-right:4px;"></span>
+            CORE ONLINE
+          </span>
+          <span class="badge badge-accent" id="modules-progress-badge">Modules Cleared: 0 / 3</span>
+          <div class="arcade-stat-badge">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--brand-accent);"><circle cx="12" cy="8" r="7"></circle><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline></svg>
+            <span>Total XP: <strong id="global-score" style="color:var(--brand-primary); font-size:var(--text-base);">0</strong></span>
+          </div>
+          <div class="arcade-stat-badge">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--brand-primary);"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            <span id="timer-display">00:00</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===================================================================
+           VIEW 1: ARCADE HUB (Module Selector)
+           =================================================================== -->
+      <div id="view-hub" class="arcade-view">
+        <div class="arcade-hero-banner">
+          <span class="badge badge-accent" style="margin-bottom:var(--space-2);">Gamified Energy Storage</span>
+          <h1 style="font-size: clamp(1.75rem, 3.5vw, 2.5rem); margin: var(--space-2) 0 var(--space-3);">Master Unit 2 Through Interactive Arcade Challenges</h1>
+          <p class="text-secondary" style="max-width: 65ch; margin: 0;">
+            Select an arcade challenge below to evaluate your understanding of primary vs. secondary batteries, lithium-ion intercalation, solar cell physics, and ultracapacitor charge mechanisms. Clear all 3 modules to unlock Mission Accomplished!
+          </p>
+        </div>
+
+        <h2 class="sr-only">Arcade Challenge Modules</h2>
+        <div class="arcade-modules-grid">
+          <!-- Module 1 Card -->
+          <div class="arcade-module-card">
+            <div>
+              <div class="flex justify-between items-center" style="margin-bottom:var(--space-2);">
+                <div class="arcade-module-icon" style="margin:0;">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19.439 7.85c0-1.57.8-2.35 1.561-2.85-.761-.5-1.561-1.28-1.561-2.85 0-1.16-.84-2.15-2-2.15-1.159 0-2.078 1.11-2 2.27.078 1.16-.92 2.73-2 2.73s-2.078-1.57-2-2.73c.078-1.16-.841-2.27-2-2.27-1.16 0-2 .99-2 2.15 0 1.57-.8 2.35-1.561 2.85.761.5 1.561 1.28 1.561 2.85 0 1.16.84 2.15 2 2.15 1.159 0 2.078-1.11 2-2.27-.078-1.16.92-2.73 2-2.73s2.078 1.57 2 2.73c-.078 1.16.841 2.27 2 2.27 1.16 0 2-.99 2-2.15z"></path></svg>
+                </div>
+                <span class="badge badge-soon" id="hub-badge-matchmaker">Pending</span>
+              </div>
+              <h3 style="margin:var(--space-3) 0 var(--space-2);">Battery &amp; Solar Matchmaker</h3>
+              <p class="text-xs text-secondary" style="margin-bottom:var(--space-4); line-height:1.6;">
+                Pair core chemical concepts such as Lead-Acid Anode, P-N Junction, Monocrystalline Silicon, and EDLC Ultracapacitors with their correct industrial definitions.
+              </p>
+            </div>
+            <button class="btn btn-primary" onclick="switchGame('matchmaker')" style="width:100%;">
+              <span>Play Matchmaker</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+            </button>
+          </div>
+
+          <!-- Module 2 Card -->
+          <div class="arcade-module-card">
+            <div>
+              <div class="flex justify-between items-center" style="margin-bottom:var(--space-2);">
+                <div class="arcade-module-icon" style="margin:0;">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect><rect x="9" y="9" width="6" height="6"></rect><line x1="9" y1="1" x2="9" y2="4"></line><line x1="15" y1="1" x2="15" y2="4"></line><line x1="9" y1="20" x2="9" y2="23"></line><line x1="15" y1="20" x2="15" y2="23"></line><line x1="20" y1="9" x2="23" y2="9"></line><line x1="20" y1="14" x2="23" y2="14"></line><line x1="1" y1="9" x2="4" y2="9"></line><line x1="1" y1="14" x2="4" y2="14"></line></svg>
+                </div>
+                <span class="badge badge-soon" id="hub-badge-builder">Pending</span>
+              </div>
+              <h3 style="margin:var(--space-3) 0 var(--space-2);">Electrochemical Cell Builder</h3>
+              <p class="text-xs text-secondary" style="margin-bottom:var(--space-4); line-height:1.6;">
+                Select battery chemistry (Lead-Acid vs. Li-Ion), position the anode, electrolyte, and cathode into chronological chamber slots, and test cell voltage.
+              </p>
+            </div>
+            <button class="btn btn-primary" onclick="switchGame('builder')" style="width:100%;">
+              <span>Build Cell</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+            </button>
+          </div>
+
+          <!-- Module 3 Card -->
+          <div class="arcade-module-card">
+            <div>
+              <div class="flex justify-between items-center" style="margin-bottom:var(--space-2);">
+                <div class="arcade-module-icon" style="margin:0;">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+                </div>
+                <span class="badge badge-soon" id="hub-badge-tycoon">Pending</span>
+              </div>
+              <h3 style="margin:var(--space-3) 0 var(--space-2);">Circuit Tycoon Quiz</h3>
+              <p class="text-xs text-secondary" style="margin-bottom:var(--space-4); line-height:1.6;">
+                Answer rapid-fire engineering chemistry trivia to energize your virtual solar microgrid facility and boost overall grid efficiency to 100%.
+              </p>
+            </div>
+            <button class="btn btn-primary" onclick="switchGame('tycoon')" style="width:100%;">
+              <span>Start Tycoon</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===================================================================
+           VIEW 2: BATTERY & SOLAR MATCHMAKER
+           =================================================================== -->
+      <div id="view-matchmaker" class="arcade-view hidden">
+        <div class="card" style="padding:var(--space-5); margin-bottom:var(--space-6);">
+          <div class="flex justify-between items-center flex-wrap gap-3">
+            <div>
+              <button onclick="switchGame('hub')" class="btn btn-outline btn-sm" style="margin-bottom:var(--space-2);">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                <span>Back to Arcade Hub</span>
+              </button>
+              <h2 style="font-size:var(--text-lg); margin:0;">Battery &amp; Solar Matchmaker</h2>
+              <p class="text-xs text-secondary" style="margin:2px 0 0;">Click a term on the left, then click its corresponding definition on the right.</p>
+            </div>
+
+            <div class="flex items-center gap-3">
+              <span class="badge badge-accent" style="font-size:var(--text-xs); font-family:var(--font-mono);">
+                Pairs Matched: <strong id="match-count" style="margin:0 2px;">0</strong> / <strong id="match-total">6</strong>
+              </span>
+              <button onclick="initMatchmaker()" class="btn btn-secondary btn-sm" aria-label="Reset Matchmaker Puzzle">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
+                <span>Reset</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr; gap:var(--space-6);" class="match-grid">
+          <div>
+            <h4 class="text-xs text-muted" style="text-transform:uppercase; letter-spacing:0.05em; margin-bottom:var(--space-3);">
+              Electrochemical Terminology
+            </h4>
+            <div id="terms-container"></div>
+          </div>
+
+          <div>
+            <h4 class="text-xs text-muted" style="text-transform:uppercase; letter-spacing:0.05em; margin-bottom:var(--space-3);">
+              Technical Definitions &amp; Physics
+            </h4>
+            <div id="definitions-container"></div>
+          </div>
+        </div>
+
+        <div id="match-feedback" class="hidden card" style="padding:var(--space-4); margin-top:var(--space-5); text-align:center;" role="status">
+          <div id="match-feedback-text"></div>
+        </div>
+      </div>
+
+      <!-- ===================================================================
+           VIEW 3: CELL BUILDER
+           =================================================================== -->
+      <div id="view-builder" class="arcade-view hidden">
+        <div class="card" style="padding:var(--space-5); margin-bottom:var(--space-6);">
+          <div class="flex justify-between items-center flex-wrap gap-3">
+            <div>
+              <button onclick="switchGame('hub')" class="btn btn-outline btn-sm" style="margin-bottom:var(--space-2);">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                <span>Back to Arcade Hub</span>
+              </button>
+              <h2 style="font-size:var(--text-lg); margin:0;">Electrochemical Cell Builder</h2>
+              <p class="text-xs text-secondary" style="margin:2px 0 0;">Select battery type and place components into proper sequence: Anode, Electrolyte, Cathode.</p>
+            </div>
+
+            <div class="flex items-center gap-3">
+              <select id="builder-type-select" onchange="changeCellType()" class="form-input" style="padding:4px 8px; font-size:var(--text-xs);" aria-label="Select Battery Type">
+                <option value="leadacid">Lead-Acid Storage Battery</option>
+                <option value="liion">Lithium-Ion Battery</option>
+              </select>
+              <button onclick="initBuilder()" class="btn btn-secondary btn-sm" aria-label="Reset Cell Builder">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
+                <span>Reset</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr; gap:var(--space-6);" class="match-grid">
+          <!-- Inventory -->
+          <div class="card" style="padding:var(--space-5);">
+            <h4 class="text-xs text-muted" style="text-transform:uppercase; letter-spacing:0.05em; margin-bottom:var(--space-2);">
+              Component Inventory
+            </h4>
+            <p class="text-xs text-secondary" style="margin-bottom:var(--space-4);">Click components to insert into next available chamber slot:</p>
+            <div id="inventory-container"></div>
+          </div>
+
+          <!-- Assembly Chamber -->
+          <div class="assembly-chamber-box">
+            <div class="flex justify-between items-center">
+              <h3 id="cell-title-display" style="font-size:var(--text-base); margin:0;">Lead-Acid Cell Assembly</h3>
+              <span id="assembly-status-badge" class="badge badge-soon">INCOMPLETE</span>
+            </div>
+
+            <!-- Slots Grid -->
+            <div id="assembly-slots" class="assembly-slots-grid">
+              <!-- Dynamically populated -->
+            </div>
+
+            <!-- Result Box -->
+            <div id="builder-result-box" class="hidden card" style="padding:var(--space-4);" role="status">
+              <div id="builder-result-title" style="font-weight:700; font-size:var(--text-sm); margin-bottom:var(--space-2);"></div>
+              <p id="builder-result-desc" class="text-xs text-secondary" style="margin:0; line-height:1.6;"></p>
+            </div>
+
+            <div class="flex justify-between items-center pt-3" style="border-top:1px solid var(--border-light); margin-top:var(--space-2);">
+              <div class="text-xs text-muted" style="font-family:var(--font-mono);">
+                Voltage Output: <strong id="voltage-output" style="color:var(--text-main); font-size:var(--text-sm);">0.0 V</strong>
+              </div>
+              <button id="test-cell-btn" onclick="testCellAssembly()" disabled class="btn btn-secondary">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+                <span>Test Cell Output</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===================================================================
+           VIEW 4: CIRCUIT TYCOON TRIVIA
+           =================================================================== -->
+      <div id="view-tycoon" class="arcade-view hidden">
+        <div class="card" style="padding:var(--space-5); margin-bottom:var(--space-6);">
+          <div class="flex justify-between items-center flex-wrap gap-3">
+            <div>
+              <button onclick="switchGame('hub')" class="btn btn-outline btn-sm" style="margin-bottom:var(--space-2);">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                <span>Back to Arcade Hub</span>
+              </button>
+              <h2 style="font-size:var(--text-lg); margin:0;">Solar &amp; Capacitor Circuit Tycoon</h2>
+              <p class="text-xs text-secondary" style="margin:2px 0 0;">Answer rapid-fire engineering chemistry trivia to power your microgrid facility.</p>
+            </div>
+
+            <div class="flex items-center gap-3">
+              <span class="badge badge-live" style="font-family:var(--font-mono);">
+                Power: <strong id="tycoon-watts" style="margin-left:4px;">0 kW</strong>
+              </span>
+              <span class="badge badge-accent" style="font-family:var(--font-mono);">
+                Level: <strong id="tycoon-level" style="margin-left:4px;">1</strong>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr; gap:var(--space-6);" class="match-grid">
+          <!-- Facility Visualizer -->
+          <div class="card" style="padding:var(--space-5); display:flex; flex-direction:column; justify-content:space-between;">
+            <div>
+              <div class="flex justify-between items-center" style="margin-bottom:var(--space-4);">
+                <h4 class="text-xs text-muted" style="text-transform:uppercase; letter-spacing:0.05em; margin:0;">Microgrid Facility</h4>
+                <span class="badge badge-live">GENERATING</span>
+              </div>
+
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:var(--space-3); margin-bottom:var(--space-4);">
+                <div class="card" style="padding:var(--space-3); text-align:center;">
+                  <div class="text-xs text-muted">Solar Array</div>
+                  <div id="facility-solar" style="font-weight:700; font-size:var(--text-xs); color:var(--brand-accent);">Offline</div>
+                </div>
+                <div class="card" style="padding:var(--space-3); text-align:center;">
+                  <div class="text-xs text-muted">Storage Bank</div>
+                  <div id="facility-storage" style="font-weight:700; font-size:var(--text-xs); color:var(--brand-primary);">Offline</div>
+                </div>
+              </div>
+
+              <div>
+                <div class="flex justify-between text-xs" style="font-family:var(--font-mono); margin-bottom:4px;">
+                  <span class="text-muted">Grid Efficiency</span>
+                  <strong id="grid-efficiency" style="color:var(--brand-primary);">0%</strong>
+                </div>
+                <div class="grid-efficiency-bar">
+                  <div id="efficiency-bar" class="grid-efficiency-fill" style="width:0%;"></div>
+                </div>
+              </div>
+            </div>
+
+            <p class="text-xs text-muted" style="text-align:center; margin-top:var(--space-4); margin-bottom:0;">
+              Every correct answer adds 250 kW and raises overall system efficiency.
+            </p>
+          </div>
+
+          <!-- Trivia Arena -->
+          <div class="tycoon-arena-box">
+            <div class="flex justify-between items-center">
+              <span id="tycoon-q-badge" class="badge badge-accent">Question 1 of 6</span>
+              <span id="tycoon-streak-badge" class="text-xs text-muted" style="font-family:var(--font-mono);">Streak: <strong style="color:var(--text-main);">0</strong></span>
+            </div>
+
+            <h3 id="tycoon-q-text" style="font-size:var(--text-base); margin:0; line-height:1.5;">Loading question...</h3>
+
+            <div id="tycoon-options" style="display:flex; flex-direction:column; gap:var(--space-3);">
+              <!-- Options populated dynamically -->
+            </div>
+
+            <div id="tycoon-expl-box" class="hidden card" style="padding:var(--space-4); background:var(--bg-subtle);" role="region" aria-label="Question explanation">
+              <div class="text-xs" style="font-weight:700; color:var(--brand-primary); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">
+                Engineering Explanation
+              </div>
+              <p id="tycoon-expl-text" class="text-xs text-secondary" style="margin:0; line-height:1.6;"></p>
+            </div>
+
+            <div class="flex justify-end pt-2">
+              <button id="tycoon-next-btn" onclick="nextTycoonQuestion()" class="hidden btn btn-primary">
+                <span>Next Challenge</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Celebratory Completion Modal -->
+  <div id="completion-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="modal-completion-title">
+    <div class="card" style="max-width:440px; width:100%; padding:var(--space-8); text-align:center; border-radius:var(--radius-2xl); box-shadow:var(--shadow-xl); position:relative;">
+      <div style="width:64px; height:64px; border-radius:50%; background:linear-gradient(135deg, var(--brand-accent), #f59e0b); display:flex; align-items:center; justify-content:center; margin:0 auto var(--space-4); color:#ffffff; box-shadow:0 8px 20px rgba(245,158,11,0.3);">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="7"></circle><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline></svg>
+      </div>
+
+      <h2 id="modal-completion-title" style="font-size:var(--text-xl); margin-bottom:var(--space-2);">Mission Accomplished!</h2>
+      <p id="modal-completion-msg" class="text-xs text-secondary" style="margin-bottom:var(--space-6);">
+        You have successfully mastered the Unit 2 Engineering Chemistry arcade suite.
+      </p>
+
+      <div class="card" style="padding:var(--space-4); display:flex; justify-content:space-around; margin-bottom:var(--space-6); background:var(--bg-subtle);">
+        <div>
+          <div class="text-xs text-muted" style="font-family:var(--font-mono);">Total XP Earned</div>
+          <div id="modal-final-score" style="font-size:var(--text-xl); font-weight:800; color:var(--brand-primary); margin-top:2px;">0</div>
+        </div>
+        <div>
+          <div class="text-xs text-muted" style="font-family:var(--font-mono);">Total Time</div>
+          <div id="modal-final-time" style="font-size:var(--text-xl); font-weight:800; color:var(--brand-accent); margin-top:2px;">00:00</div>
+        </div>
+      </div>
+
+      <button onclick="closeCompletionModal()" class="btn btn-primary" style="width:100%;">
+        <span>Return to Arcade Hub</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Shared Footer -->
+  <footer id="site-footer"></footer>
+
+  <!-- Scripts -->
+  <script src="../assets/js/data-store.js"></script>
+  <script src="../assets/js/main.js"></script>
+  <script src="../assets/js/components.js"></script>
+  <script src="../assets/js/search.js"></script>
+  <script src="../assets/js/games/unit2-arcade.js"></script>
+</body>
+</html>

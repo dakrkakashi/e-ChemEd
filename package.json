@@ -1,0 +1,21 @@
+{
+  "name": "e-chemed",
+  "version": "1.0.0",
+  "description": "e-chemEd: Engineering Chemistry e-Learning Platform | Sanjivani College of Engineering",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "start": "node scripts/serve-frontend.js",
+    "backend": "node backend/server.js",
+    "audit": "node scripts/verify-site.js",
+    "purge": "node backend/scripts/purge.js",
+    "lint": "stylelint \"frontend/assets/css/**/*.css\""
+  },
+  "devDependencies": {
+    "axe-core": "^4.13.0",
+    "stylelint": "^17.16.0"
+  },
+  "author": "Department of Engineering Science & Humanities, Sanjivani COE",
+  "license": "UNLICENSED"
+}

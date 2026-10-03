@@ -1,0 +1,36 @@
+{
+  "unitId": 1,
+  "unitTitle": "Water Processing and Environmental Sustainability",
+  "quizzes": [
+    {
+      "id": 1,
+      "quizNumber": 1,
+      "title": "Quiz 1: Water Hardness & Types",
+      "description": "Evaluation on hardness definitions, temporary vs. permanent hardness, and units of hardness (ppm, mg/L).",
+      "googleFormUrl": "https://forms.gle/MbTbMczM7svr3Hws7",
+      "_comment": "TODO: Replace with dedicated Google Form URL for Quiz 1 when available",
+      "marksPublished": false,
+      "marksNotice": "Marks will be published here upon completion of faculty evaluation."
+    },
+    {
+      "id": 2,
+      "quizNumber": 2,
+      "title": "Quiz 2: EDTA Method & Water Softening",
+      "description": "Assessment covering complexometric titration, EBT indicator, Zeolite process, and Ion-Exchange demineralization.",
+      "googleFormUrl": "https://forms.gle/MbTbMczM7svr3Hws7",
+      "_comment": "TODO: Replace with dedicated Google Form URL for Quiz 2 when available",
+      "marksPublished": false,
+      "marksNotice": "Marks will be published here upon completion of faculty evaluation."
+    },
+    {
+      "id": 3,
+      "quizNumber": 3,
+      "title": "Quiz 3: Boiler Troubles & Sustainability",
+      "description": "Assessment on boiler scale and sludge formation, caustic embrittlement mechanisms, and environmental water recycling.",
+      "googleFormUrl": "https://forms.gle/MbTbMczM7svr3Hws7",
+      "_comment": "TODO: Replace with dedicated Google Form URL for Quiz 3 when available",
+      "marksPublished": false,
+      "marksNotice": "Marks will be published here upon completion of faculty evaluation."
+    }
+  ]
+}

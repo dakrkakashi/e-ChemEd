@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Quizzes Dashboard — e-chemEd | Sanjivani COE</title>
+  
+  <meta name="description" content="Engineering Chemistry evaluation quizzes across all syllabus units. Access Google Form assessment links and view performance marks.">
+  <link rel="icon" type="image/svg+xml" href="../assets/img/favicon.svg">
+
+  <!-- Core Design System CSS -->
+  <link rel="stylesheet" href="../assets/css/tokens.css">
+  <link rel="stylesheet" href="../assets/css/base.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/pages/unit.css">
+  
+  <style>
+    .quiz-unit-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--space-6);
+      margin-top: var(--space-6);
+    }
+    @media (min-width: 768px) {
+      .quiz-unit-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+    @media (min-width: 1024px) {
+      .quiz-unit-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+    .quiz-module-box {
+      background: var(--bg-subtle);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+      padding: var(--space-4);
+      margin-top: var(--space-3);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Shared Header -->
+  <header id="site-header"></header>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <div class="container">
+      
+      <!-- Breadcrumbs -->
+      <nav class="breadcrumbs" aria-label="Breadcrumb">
+        <a href="../index.html">Home</a>
+        <span class="breadcrumb-separator">/</span>
+        <span class="breadcrumb-current">Quizzes Dashboard</span>
+      </nav>
+
+      <!-- Page Header -->
+      <div style="margin-bottom: var(--space-8);">
+        <h1>Engineering Chemistry Quizzes</h1>
+        <p class="text-secondary" style="max-width: 65ch;">
+          Unit-wise evaluation quizzes designed to assess your conceptual understanding, EDTA calculations, 
+          and applied chemical principles. Submit your responses and track marks publication status.
+        </p>
+      </div>
+
+      <!-- Unit Quizzes Grid -->
+      <h2 class="sr-only">Available Quizzes by Unit</h2>
+      <div class="quiz-unit-grid" id="quizzes-container">
+        <!-- Rendered dynamically from data/units.json and data/quizzes/unit1.json -->
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Marks Modal Dialog -->
+  <div class="modal-backdrop" id="marks-modal" role="dialog" aria-modal="true" aria-labelledby="marks-modal-title">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title" id="marks-modal-title">Quiz Evaluation Marks</h3>
+        <button type="button" class="btn-icon" data-close-modal aria-label="Close dialog">&times;</button>
+      </div>
+      <div class="modal-body" id="marks-modal-body">
+        <div style="text-align: center; padding: var(--space-4) 0;">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--brand-accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin:0 auto var(--space-3);"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+          <h4 style="margin-bottom: var(--space-2);">Marks will be published here</h4>
+          <p class="text-sm text-secondary" style="margin-bottom: var(--space-4);">
+            Evaluations for this quiz are currently under review by department faculty.
+          </p>
+          <div style="background:var(--bg-subtle); border:1px solid var(--border-light); border-radius:var(--radius-md); padding:var(--space-3); text-align:left; font-size:var(--text-xs); color:var(--text-muted);">
+            <strong>Student Note:</strong> Once the grade ledger is uploaded, your score mapped to your Roll Number and PRN will appear here automatically.
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-close-modal>Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Shared Footer -->
+  <footer id="site-footer"></footer>
+
+  <!-- Scripts -->
+  <script src="../assets/js/data-store.js"></script>
+  <script src="../assets/js/main.js"></script>
+  <script src="../assets/js/components.js"></script>
+  <script src="../assets/js/search.js"></script>
+
+  <script>
+    (async function () {
+      'use strict';
+      try {
+        const loader = window.loadEchemData || (p => fetch(p).then(r => r.json()));
+        const [units, quizzesData] = await Promise.all([
+          loader('../data/units.json'),
+          loader('../data/quizzes/unit1.json')
+        ]);
+
+        const container = document.getElementById('quizzes-container');
+        
+        container.innerHTML = units.map(unit => {
+          const isLive = unit.status === 'live';
+          
+          if (isLive) {
+            return `
+              <div class="card" style="border-top: 4px solid var(--unit-${unit.unitNumber}); display:flex; flex-direction:column; justify-content:space-between;">
+                <div>
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--space-3);">
+                    <span class="badge badge-live">Live Quizzes</span>
+                    <strong style="color:var(--unit-${unit.unitNumber}); font-size:var(--text-sm);">UNIT ${unit.unitNumber}</strong>
+                  </div>
+                  <h3 style="font-size:var(--text-xl); margin-bottom:var(--space-2);">${unit.title}</h3>
+                  <p class="text-sm text-secondary">${unit.description}</p>
+                  
+                  <div style="margin-top:var(--space-4);">
+                    ${quizzesData.quizzes.map(q => `
+                      <div class="quiz-module-box">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--space-2);">
+                          <strong style="font-size:var(--text-sm);">${q.title}</strong>
+                        </div>
+                        <p style="font-size:var(--text-xs); color:var(--text-secondary); margin-bottom:var(--space-3);">${q.description}</p>
+                        <div style="display:flex; gap:var(--space-2);">
+                          <a href="${q.googleFormUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm flex-1">
+                            Start Quiz &rarr;
+                          </a>
+                          <button type="button" class="btn btn-secondary btn-sm" onclick="showQuizMarksModal(${q.quizNumber})">
+                            Marks
+                          </button>
+                        </div>
+                      </div>
+                    `).join('')}
+                  </div>
+                </div>
+
+                <div style="margin-top:var(--space-6); padding-top:var(--space-4); border-top:1px solid var(--border-light);">
+                  <a href="unit.html?u=1" class="btn btn-outline btn-sm" style="width:100%;">
+                    Open Unit 1 Learning Hub &rarr;
+                  </a>
+                </div>
+              </div>
+            `;
+          } else {
+            return `
+              <div class="card" style="border-top: 4px solid var(--border-medium); display:flex; flex-direction:column; justify-content:space-between;">
+                <div>
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--space-3);">
+                    <span class="badge badge-soon">Coming Soon</span>
+                    <strong style="color:var(--text-secondary); font-size:var(--text-sm);">UNIT ${unit.unitNumber}</strong>
+                  </div>
+                  <h3 style="font-size:var(--text-xl); margin-bottom:var(--space-2);">${unit.title}</h3>
+                  <p class="text-sm text-secondary">${unit.description}</p>
+
+                  <div style="margin-top:var(--space-6); padding:var(--space-6) var(--space-4); background:var(--bg-subtle); border-radius:var(--radius-md); text-align:center; border:1px dashed var(--border-medium);">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin:0 auto var(--space-2);"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                    <p class="text-xs text-secondary" style="margin:0;">Quizzes for Unit ${unit.unitNumber} will be scheduled following lecture completion.</p>
+                  </div>
+                </div>
+
+                <div style="margin-top:var(--space-6); padding-top:var(--space-4); border-top:1px solid var(--border-light);">
+                  <a href="unit.html?u=${unit.unitNumber}" class="btn btn-secondary btn-sm" style="width:100%;">
+                    View Syllabus Overview &rarr;
+                  </a>
+                </div>
+              </div>
+            `;
+          }
+        }).join('');
+      } catch (err) {
+        console.error('Error rendering quizzes dashboard:', err);
+      }
+    })();
+
+    window.showQuizMarksModal = function (quizNum) {
+      const modal = document.getElementById('marks-modal');
+      const titleEl = document.getElementById('marks-modal-title');
+      if (titleEl) titleEl.textContent = `Quiz ${quizNum}: Performance Evaluation`;
+      if (modal) modal.classList.add('open');
+    };
+  </script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+{
+  "divisions": [
+    "A (Computer)",
+    "B (IT)",
+    "C (E&TC)",
+    "D (Mechanical)",
+    "E (Civil)",
+    "F (Electrical)"
+  ],
+  "sessions": [
+    "Lecture",
+    "Lab Practical",
+    "Tutorial"
+  ],
+  "units": [
+    "Unit 1: Water Processing and Environmental Sustainability",
+    "Unit 2: Electrochemical Energy Storage Systems",
+    "Unit 3: Flexible Electronics & Optoelectronic Materials",
+    "Unit 4: Nanomaterials, Electrochemistry & Thermal Analysis",
+    "Unit 5: Energy Generation & Sustainable Fuels"
+  ]
+}

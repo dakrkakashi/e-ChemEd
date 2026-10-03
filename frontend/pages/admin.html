@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Faculty Attendance Portal — e-chemEd | Sanjivani COE</title>
+  
+  <meta name="description" content="Faculty administrative portal for viewing attendance records, session code management, and CSV roster exports.">
+  <link rel="icon" type="image/svg+xml" href="../assets/img/favicon.svg">
+
+  <!-- Core Design System CSS -->
+  <link rel="stylesheet" href="../assets/css/tokens.css">
+  <link rel="stylesheet" href="../assets/css/base.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+
+  <style>
+    .admin-container {
+      max-width: 1040px;
+      margin: 0 auto;
+    }
+    .admin-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-xl);
+      padding: var(--space-6);
+      box-shadow: var(--shadow-sm);
+      margin-bottom: var(--space-6);
+    }
+    .auth-banner {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-4);
+      align-items: flex-end;
+    }
+    .auth-input-wrap {
+      flex: 1;
+      min-width: 260px;
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: var(--space-4);
+      margin-bottom: var(--space-6);
+    }
+    .stat-box {
+      background: var(--bg-subtle);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-lg);
+      padding: var(--space-4);
+      text-align: center;
+    }
+    .stat-number {
+      font-size: var(--text-3xl);
+      font-weight: 700;
+      color: var(--brand-primary);
+      margin-bottom: var(--space-1);
+    }
+    .stat-label {
+      font-size: var(--text-xs);
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .table-responsive {
+      overflow-x: auto;
+      margin-top: var(--space-4);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-light);
+    }
+    .admin-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: var(--text-sm);
+    }
+    .admin-table th {
+      background: var(--bg-subtle);
+      color: var(--text-main);
+      padding: var(--space-3) var(--space-4);
+      border-bottom: 2px solid var(--border-light);
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .admin-table td {
+      padding: var(--space-3) var(--space-4);
+      border-bottom: 1px solid var(--border-light);
+      color: var(--text-secondary);
+      white-space: nowrap;
+    }
+    .admin-table tr:hover td {
+      background: var(--bg-surface-hover);
+    }
+    .filter-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-3);
+      margin-bottom: var(--space-4);
+      align-items: center;
+      justify-content: space-between;
+    }
+    .filter-group {
+      display: flex;
+      gap: var(--space-2);
+      flex-wrap: wrap;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Shared Header -->
+  <header id="site-header"></header>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <div class="container admin-container">
+      
+      <!-- Breadcrumbs -->
+      <nav class="breadcrumbs" aria-label="Breadcrumb">
+        <a href="../index.html">Home</a>
+        <span class="breadcrumb-separator">/</span>
+        <a href="attendance.html">Attendance</a>
+        <span class="breadcrumb-separator">/</span>
+        <span class="breadcrumb-current">Faculty Portal</span>
+      </nav>
+
+      <!-- Page Header -->
+      <div style="margin-bottom: var(--space-6);">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:var(--space-4);">
+          <div>
+            <h1>Faculty Attendance Administration</h1>
+            <p class="text-secondary" style="margin-top:4px;">
+              Session management, attendance roster review, and CSV export.
+            </p>
+          </div>
+          <span id="backend-status-badge" class="badge" style="background:var(--bg-subtle); border:1px solid var(--border-light);">
+            Checking Backend...
+          </span>
+        </div>
+      </div>
+
+      <!-- Authentication Section -->
+      <section class="admin-card" aria-labelledby="auth-title">
+        <h2 id="auth-title" style="font-size:var(--text-lg); margin-bottom:var(--space-2);">Faculty Authentication</h2>
+        <p class="text-xs text-muted" style="margin-bottom:var(--space-4);">
+          Enter the secret <code>ADMIN_KEY</code> from <code>backend/.env</code>. For your privacy and security, this key is kept exclusively in browser memory and is never persisted to disk or local storage.
+        </p>
+
+        <form id="admin-auth-form" class="auth-banner" onsubmit="return false;">
+          <div class="auth-input-wrap">
+            <label for="admin-key-input" class="form-label" style="font-size:var(--text-xs);">Admin Secret Key</label>
+            <input type="password" id="admin-key-input" class="form-control" placeholder="Enter ADMIN_KEY" autocomplete="off" required>
+          </div>
+          <button type="submit" class="btn btn-primary" id="btn-authenticate">
+            Authenticate &amp; Refresh Roster
+          </button>
+          <button type="button" class="btn btn-outline" id="btn-clear-key" style="display:none;">
+            Clear Key from Memory
+          </button>
+        </form>
+        <div id="auth-message" style="margin-top:var(--space-3); font-size:var(--text-xs); display:none;"></div>
+      </section>
+
+      <!-- Faculty Controls: Session Code & Export -->
+      <div id="admin-controls-panel" style="display:none;">
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap:var(--space-6); margin-bottom:var(--space-6);">
+          
+          <!-- Session Code Manager -->
+          <div class="admin-card" style="margin-bottom:0;">
+            <h3 style="font-size:var(--text-base); margin-bottom:var(--space-2);">Active Session Code</h3>
+            <p class="text-xs text-muted" style="margin-bottom:var(--space-3);">
+              If set, students must enter this code when submitting attendance in today's class. Leave blank to allow open submission.
+            </p>
+            <div style="display:flex; gap:var(--space-2);">
+              <input type="text" id="input-session-code" class="form-control" placeholder="e.g. CHEM2026" style="text-transform:uppercase;">
+              <button type="button" class="btn btn-primary" id="btn-save-session-code">
+                Update
+              </button>
+            </div>
+            <div id="session-code-feedback" class="text-xs text-muted" style="margin-top:var(--space-2);"></div>
+          </div>
+
+          <!-- Roster Export & Purge Note -->
+          <div class="admin-card" style="margin-bottom:0; display:flex; flex-direction:column; justify-content:space-between;">
+            <div>
+              <h3 style="font-size:var(--text-base); margin-bottom:var(--space-2);">Attendance Data Export</h3>
+              <p class="text-xs text-muted" style="margin-bottom:var(--space-3);">
+                Download the complete attendance roster as an RFC-4180 formatted CSV spreadsheet compatible with Microsoft Excel and Google Sheets.
+              </p>
+            </div>
+            <div>
+              <button type="button" class="btn btn-primary" id="btn-download-csv" style="width:100%;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:6px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                Download Attendance CSV
+              </button>
+              <div id="export-feedback" class="text-xs text-muted" style="margin-top:var(--space-2); text-align:center;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Metrics Overview -->
+        <div class="stats-grid">
+          <div class="stat-box">
+            <div class="stat-number" id="stat-total-records">0</div>
+            <div class="stat-label">Total Submissions</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-number" id="stat-today-records">0</div>
+            <div class="stat-label">Logged Today</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-number" id="stat-active-divisions">0</div>
+            <div class="stat-label">Divisions Active</div>
+          </div>
+        </div>
+
+        <!-- Roster Table -->
+        <section class="admin-card" aria-labelledby="roster-title">
+          <div class="filter-bar">
+            <div>
+              <h2 id="roster-title" style="font-size:var(--text-lg); margin-bottom:0;">Live Attendance Roster</h2>
+            </div>
+            <div class="filter-group">
+              <input type="text" id="roster-search" class="form-control" placeholder="Search by name, roll, PRN..." style="padding:0.4rem 0.8rem; font-size:var(--text-xs); width:200px;">
+              <select id="roster-filter-unit" class="form-control" style="padding:0.4rem 0.8rem; font-size:var(--text-xs); width:180px;">
+                <option value="">All Units</option>
+                <option value="Unit 1">Unit 1</option>
+                <option value="Unit 2">Unit 2</option>
+                <option value="Unit 3">Unit 3</option>
+                <option value="Unit 4">Unit 4</option>
+                <option value="Unit 5">Unit 5</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Date</th>
+                  <th>Session</th>
+                  <th>Unit</th>
+                  <th>Division</th>
+                  <th>Roll No</th>
+                  <th>PRN</th>
+                  <th>Student Name</th>
+                </tr>
+              </thead>
+              <tbody id="roster-table-body">
+                <tr>
+                  <td colspan="8" style="text-align:center; padding:var(--space-6); color:var(--text-muted);">
+                    No attendance records found.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Shared Footer -->
+  <footer id="site-footer"></footer>
+
+  <!-- Scripts -->
+  <script src="../assets/js/data-store.js"></script>
+  <script src="../assets/js/main.js"></script>
+  <script src="../assets/js/components.js"></script>
+  <script src="../assets/js/config.js"></script>
+
+  <script>
+    (function () {
+      'use strict';
+
+      // Admin key stored strictly in JavaScript closure memory — NEVER in storage
+      let inMemoryAdminKey = '';
+      let rawRecords = [];
+
+      const apiBase = window.ECHEMED_CONFIG ? window.ECHEMED_CONFIG.getApiBase() : `${location.protocol}//${location.hostname}:3001`;
+
+      const statusBadge = document.getElementById('backend-status-badge');
+      const authForm = document.getElementById('admin-auth-form');
+      const keyInput = document.getElementById('admin-key-input');
+      const authMessage = document.getElementById('auth-message');
+      const clearKeyBtn = document.getElementById('btn-clear-key');
+      const controlsPanel = document.getElementById('admin-controls-panel');
+      const sessionCodeInput = document.getElementById('input-session-code');
+      const saveSessionCodeBtn = document.getElementById('btn-save-session-code');
+      const sessionCodeFeedback = document.getElementById('session-code-feedback');
+      const downloadCsvBtn = document.getElementById('btn-download-csv');
+      const exportFeedback = document.getElementById('export-feedback');
+      const rosterTableBody = document.getElementById('roster-table-body');
+      const rosterSearch = document.getElementById('roster-search');
+      const rosterFilterUnit = document.getElementById('roster-filter-unit');
+
+      // Check backend health
+      fetch(`${apiBase}/api/health`)
+        .then(r => r.json())
+        .then(data => {
+          if (data.ok) {
+            statusBadge.className = 'badge badge-live';
+            statusBadge.textContent = `Backend Online (Port 3001)`;
+          } else {
+            statusBadge.textContent = 'Backend Error';
+          }
+        })
+        .catch(() => {
+          statusBadge.textContent = 'Backend Offline';
+          statusBadge.style.color = 'var(--unit-5)';
+        });
+
+      // Authentication Handler
+      authForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        const candidateKey = keyInput.value.trim();
+        if (!candidateKey) return;
+
+        inMemoryAdminKey = candidateKey;
+        loadRosterAndSettings();
+      });
+
+      clearKeyBtn.addEventListener('click', function () {
+        inMemoryAdminKey = '';
+        keyInput.value = '';
+        controlsPanel.style.display = 'none';
+        clearKeyBtn.style.display = 'none';
+        authMessage.style.display = 'none';
+        rawRecords = [];
+      });
+
+      async function loadRosterAndSettings() {
+        authMessage.style.display = 'block';
+        authMessage.style.color = 'var(--text-muted)';
+        authMessage.textContent = 'Verifying credentials with attendance server...';
+
+        try {
+          // Fetch attendance roster
+          const res = await fetch(`${apiBase}/api/attendance`, {
+            headers: {
+              'x-admin-key': inMemoryAdminKey
+            }
+          });
+
+          const data = await res.json();
+
+          if (res.status === 401 || !data.ok) {
+            authMessage.style.color = 'var(--unit-5)';
+            authMessage.textContent = 'Access Denied: The ADMIN_KEY entered does not match backend configuration.';
+            controlsPanel.style.display = 'none';
+            clearKeyBtn.style.display = 'none';
+            return;
+          }
+
+          // Authenticated successfully
+          authMessage.style.color = 'var(--brand-primary)';
+          authMessage.textContent = 'Authentication verified. Attendance roster synchronized.';
+          controlsPanel.style.display = 'block';
+          clearKeyBtn.style.display = 'inline-block';
+
+          rawRecords = data.records || [];
+          renderRoster(rawRecords);
+          updateMetrics(rawRecords);
+
+          // Fetch active session code
+          fetchSessionCode();
+
+        } catch (err) {
+          authMessage.style.color = 'var(--unit-5)';
+          authMessage.textContent = `Connection failure: Could not contact backend at ${apiBase}.`;
+        }
+      }
+
+      async function fetchSessionCode() {
+        try {
+          const res = await fetch(`${apiBase}/api/attendance/session-code`, {
+            headers: { 'x-admin-key': inMemoryAdminKey }
+          });
+          const data = await res.json();
+          if (data.ok) {
+            sessionCodeInput.value = data.sessionCode || '';
+            sessionCodeFeedback.textContent = data.sessionCode 
+              ? `Students must enter "${data.sessionCode}" to submit attendance.` 
+              : 'No session code enforced (open submission).';
+          }
+        } catch (e) {}
+      }
+
+      saveSessionCodeBtn.addEventListener('click', async function () {
+        const newCode = sessionCodeInput.value.trim();
+        sessionCodeFeedback.textContent = 'Updating session code...';
+        try {
+          const res = await fetch(`${apiBase}/api/attendance/session-code`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-admin-key': inMemoryAdminKey
+            },
+            body: JSON.stringify({ sessionCode: newCode })
+          });
+          const data = await res.json();
+          if (data.ok) {
+            sessionCodeFeedback.style.color = 'var(--brand-primary)';
+            sessionCodeFeedback.textContent = newCode 
+              ? `Session code set to "${newCode}".` 
+              : 'Session code disabled. Submissions are open without code.';
+          } else {
+            sessionCodeFeedback.style.color = 'var(--unit-5)';
+            sessionCodeFeedback.textContent = data.error || 'Failed to update code.';
+          }
+        } catch (err) {
+          sessionCodeFeedback.style.color = 'var(--unit-5)';
+          sessionCodeFeedback.textContent = 'Error saving session code.';
+        }
+      });
+
+      // CSV Export Button (Fetches using x-admin-key header ONLY, then triggers download via Blob)
+      downloadCsvBtn.addEventListener('click', async function () {
+        if (!inMemoryAdminKey) return;
+        exportFeedback.textContent = 'Preparing CSV file from database...';
+
+        try {
+          const res = await fetch(`${apiBase}/api/attendance/export.csv`, {
+            method: 'GET',
+            headers: {
+              'x-admin-key': inMemoryAdminKey
+            }
+          });
+
+          if (!res.ok) {
+            exportFeedback.textContent = 'Download failed: Unauthorized key.';
+            return;
+          }
+
+          const blob = await res.blob();
+          const downloadUrl = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          const today = new Date().toISOString().split('T')[0];
+          a.href = downloadUrl;
+          a.download = `echemed-attendance-${today}.csv`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          window.URL.revokeObjectURL(downloadUrl);
+
+          exportFeedback.textContent = 'CSV downloaded successfully!';
+        } catch (err) {
+          exportFeedback.textContent = 'Error downloading CSV export.';
+        }
+      });
+
+      function updateMetrics(records) {
+        document.getElementById('stat-total-records').textContent = records.length;
+        const today = new Date().toISOString().split('T')[0];
+        const todayCount = records.filter(r => r.date === today).length;
+        document.getElementById('stat-today-records').textContent = todayCount;
+
+        const uniqueDivisions = new Set(records.map(r => r.division));
+        document.getElementById('stat-active-divisions').textContent = uniqueDivisions.size;
+      }
+
+      function renderRoster(records) {
+        if (!records || records.length === 0) {
+          rosterTableBody.innerHTML = `
+            <tr>
+              <td colspan="8" style="text-align:center; padding:var(--space-6); color:var(--text-muted);">
+                No attendance records found matching criteria.
+              </td>
+            </tr>
+          `;
+          return;
+        }
+
+        rosterTableBody.innerHTML = records.map((r, idx) => `
+          <tr>
+            <td>${records.length - idx}</td>
+            <td><strong>${r.date}</strong></td>
+            <td><span class="badge" style="background:var(--bg-subtle);">${escapeHtml(r.session || 'Lecture')}</span></td>
+            <td>${escapeHtml(r.unit)}</td>
+            <td><strong>${escapeHtml(r.division)}</strong></td>
+            <td>${escapeHtml(r.rollNo)}</td>
+            <td><code>${escapeHtml(r.prn)}</code></td>
+            <td>${escapeHtml(r.name)}</td>
+          </tr>
+        `).join('');
+      }
+
+      function escapeHtml(str) {
+        if (!str) return '';
+        return String(str)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;');
+      }
+
+      // Filter handling
+      function applyFilter() {
+        const query = rosterSearch.value.trim().toLowerCase();
+        const unitFilter = rosterFilterUnit.value.toLowerCase();
+
+        const filtered = rawRecords.filter(r => {
+          const matchQuery = !query ||
+            (r.name && r.name.toLowerCase().includes(query)) ||
+            (r.rollNo && r.rollNo.toLowerCase().includes(query)) ||
+            (r.prn && r.prn.toLowerCase().includes(query)) ||
+            (r.division && r.division.toLowerCase().includes(query));
+
+          const matchUnit = !unitFilter || (r.unit && r.unit.toLowerCase().includes(unitFilter));
+
+          return matchQuery && matchUnit;
+        });
+
+        renderRoster(filtered);
+      }
+
+      rosterSearch.addEventListener('input', applyFilter);
+      rosterFilterUnit.addEventListener('change', applyFilter);
+
+    })();
+  </script>
+</body>
+</html>

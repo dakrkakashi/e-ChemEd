@@ -1,0 +1,113 @@
+[
+  {
+    "id": 1,
+    "unitNumber": 1,
+    "title": "Water Processing and Environmental Sustainability",
+    "shortTitle": "Water Processing",
+    "icon": "droplet",
+    "accentColor": "#0e7490",
+    "status": "live",
+    "description": "Hardness of water, EDTA complexometric titration, zeolite and ion-exchange softening, boiler feed water troubles, and environmental sustainability.",
+    "topics": [
+      "Water Hardness & Types (Temporary & Permanent)",
+      "Units of Hardness (ppm, mg/L, °Cl, °Fr)",
+      "EDTA Complexometric Titration Method",
+      "Zeolite & Ion-Exchange Demineralization",
+      "Boiler Troubles: Scale, Sludge & Caustic Embrittlement",
+      "Environmental Sustainability & Water Recycling"
+    ],
+    "hasMindMap": true,
+    "hasVideo": true,
+    "hasQuestionBank": true,
+    "hasQuizzes": true,
+    "hasGame": true,
+    "gamePath": "games/unit1-puzzle.html",
+    "gameName": "Water Processing Challenge"
+  },
+  {
+    "id": 2,
+    "unitNumber": 2,
+    "title": "Electrochemical Energy Storage Systems",
+    "shortTitle": "Electrochemical Energy",
+    "icon": "battery-charging",
+    "accentColor": "#b45309",
+    "status": "coming-soon",
+    "description": "Battery mechanisms, lithium-ion technology, solar photovoltaic energy conversion, supercapacitor storage, and circuit analysis.",
+    "topics": [
+      "Electrochemical Cells & Redox Chemistry (To be confirmed)",
+      "Secondary Batteries — Lead-Acid & Li-ion (To be confirmed)",
+      "Solar Photovoltaic Cell Principles (To be confirmed)",
+      "Electric Double-Layer Supercapacitors (To be confirmed)"
+    ],
+    "hasMindMap": false,
+    "hasVideo": false,
+    "hasQuestionBank": false,
+    "hasQuizzes": false,
+    "hasGame": true,
+    "gamePath": "games/unit2-arcade.html",
+    "gameName": "Chem-Arcade Suite"
+  },
+  {
+    "id": 3,
+    "unitNumber": 3,
+    "title": "Flexible Electronics & Optoelectronic Materials",
+    "shortTitle": "Flexible Electronics",
+    "icon": "cpu",
+    "accentColor": "#6d28d9",
+    "status": "coming-soon",
+    "description": "Conducting polymers, flexible optoelectronics, smart displays, OLED architectures, and thin-film devices.",
+    "topics": [
+      "Inherently Conducting Polymers (To be confirmed)",
+      "Synthesis & Doping Mechanisms (To be confirmed)",
+      "Organic Light Emitting Diodes (To be confirmed)",
+      "Flexible Sensors & Wearable Devices (To be confirmed)"
+    ],
+    "hasMindMap": false,
+    "hasVideo": false,
+    "hasQuestionBank": false,
+    "hasQuizzes": false,
+    "hasGame": false
+  },
+  {
+    "id": 4,
+    "unitNumber": 4,
+    "title": "Nanomaterials, Electrochemistry & Thermal Analysis",
+    "shortTitle": "Nanomaterials & Thermal",
+    "icon": "atom",
+    "accentColor": "#047857",
+    "status": "coming-soon",
+    "description": "0D, 1D, 2D nanomaterial classification, sol-gel & chemical vapor deposition, cyclic voltammetry, and TGA/DSC thermal characterization.",
+    "topics": [
+      "Nanoscale Materials & Quantum Confinement (To be confirmed)",
+      "Carbon Nanotubes & Graphene (To be confirmed)",
+      "Cyclic Voltammetry & Corrosion Electrochemistry (To be confirmed)",
+      "Thermogravimetric Analysis & DSC (To be confirmed)"
+    ],
+    "hasMindMap": false,
+    "hasVideo": false,
+    "hasQuestionBank": false,
+    "hasQuizzes": false,
+    "hasGame": false
+  },
+  {
+    "id": 5,
+    "unitNumber": 5,
+    "title": "Energy Generation & Sustainable Fuels",
+    "shortTitle": "Energy & Fuels",
+    "icon": "flame",
+    "accentColor": "#be123c",
+    "status": "coming-soon",
+    "description": "Solid, liquid and gaseous fuels, determination of calorific values, green hydrogen production, and fuel cell technologies.",
+    "topics": [
+      "Calorific Value & Bomb Calorimetry (To be confirmed)",
+      "Analysis of Coal (To be confirmed)",
+      "Hydrogen Fuel & Clean Generation (To be confirmed)",
+      "Fuel Cell Technologies (To be confirmed)"
+    ],
+    "hasMindMap": false,
+    "hasVideo": false,
+    "hasQuestionBank": false,
+    "hasQuizzes": false,
+    "hasGame": false
+  }
+]

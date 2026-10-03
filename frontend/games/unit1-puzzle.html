@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Unit 1 Water Chemistry Puzzle Challenge — e-chemEd | Sanjivani COE</title>
+  
+  <meta name="description" content="Engaging 4-level interactive puzzle on Water Processing & Environmental Sustainability: Word Search, Cause & Effect Matching, Virtual EDTA Titration, and Boiler Escape Room.">
+  <link rel="icon" type="image/svg+xml" href="../assets/img/favicon.svg">
+
+  <!-- Core Design System CSS -->
+  <link rel="stylesheet" href="../assets/css/tokens.css">
+  <link rel="stylesheet" href="../assets/css/base.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/pages/games.css">
+</head>
+<body>
+
+  <!-- Shared Header -->
+  <header id="site-header"></header>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <div class="container" style="max-width: 960px;">
+      
+      <!-- Breadcrumbs -->
+      <nav class="breadcrumbs" aria-label="Breadcrumb">
+        <a href="../index.html">Home</a>
+        <span class="breadcrumb-separator">/</span>
+        <a href="../pages/games.html">Games Hub</a>
+        <span class="breadcrumb-separator">/</span>
+        <span class="breadcrumb-current">Unit 1 Puzzle Challenge</span>
+      </nav>
+
+      <!-- Page Header -->
+      <div style="margin-bottom: var(--space-6);">
+        <div class="flex items-center gap-3" style="margin-bottom:var(--space-2);">
+          <span class="badge badge-accent">Unit 1 Lab Game</span>
+          <span class="badge badge-live">4 Interactive Levels</span>
+        </div>
+        <h1>Water Chemistry Gamified Challenge</h1>
+        <p class="text-secondary" style="max-width: 72ch; margin: 0;">
+          Apply your knowledge of water hardness, boiler water troubles, complexometric titration, and internal conditioning through 4 progressive problem-solving modules.
+        </p>
+      </div>
+
+      <!-- Level Tabs Navigation -->
+      <h2 class="sr-only">Puzzle Challenge Levels</h2>
+      <div class="tabs-nav" role="tablist" aria-label="Puzzle Challenge Levels" style="margin-bottom:var(--space-6);">
+        <button class="tab-btn active" role="tab" id="tab-lvl-1" aria-selected="true" aria-controls="panel-lvl-1" onclick="switchPuzzleLevel(1)">
+          <span>1. Word Search</span>
+        </button>
+        <button class="tab-btn" role="tab" id="tab-lvl-2" aria-selected="false" aria-controls="panel-lvl-2" onclick="switchPuzzleLevel(2)">
+          <span>2. Problem &amp; Cause Matching</span>
+        </button>
+        <button class="tab-btn" role="tab" id="tab-lvl-3" aria-selected="false" aria-controls="panel-lvl-3" onclick="switchPuzzleLevel(3)">
+          <span>3. Virtual EDTA Titration</span>
+        </button>
+        <button class="tab-btn" role="tab" id="tab-lvl-4" aria-selected="false" aria-controls="panel-lvl-4" onclick="switchPuzzleLevel(4)">
+          <span>4. Boiler Escape Room</span>
+        </button>
+      </div>
+
+      <!-- Main Puzzle Box Container -->
+      <div class="puzzle-container">
+
+        <!-- ===================================================================
+             LEVEL 1: Strict Directional Word Search
+             =================================================================== -->
+        <div class="tab-content active" id="panel-lvl-1" role="tabpanel" aria-labelledby="tab-lvl-1">
+          <div style="text-align: center; margin-bottom: var(--space-4);">
+            <h3 style="margin-bottom: var(--space-2);">Level 1: Water Processing Word Search</h3>
+            <p class="text-sm text-secondary" style="max-width: 60ch; margin: 0 auto;">
+              Find all 4 essential water processing terms. Click adjacent letters in a straight line (horizontal, vertical, or diagonal — forward or backward).
+            </p>
+          </div>
+
+          <!-- Target Words List -->
+          <div class="target-words-list" role="list" aria-label="Keywords to find in word search">
+            <span class="target-word-pill" id="target-EDTA" role="listitem">EDTA</span>
+            <span class="target-word-pill" id="target-SCALE" role="listitem">SCALE</span>
+            <span class="target-word-pill" id="target-HARDNESS" role="listitem">HARDNESS</span>
+            <span class="target-word-pill" id="target-SLUDGE" role="listitem">SLUDGE</span>
+          </div>
+
+          <!-- Interactive Word Search Grid -->
+          <div class="word-search-grid" id="word-search-grid" role="region" aria-label="Word search letters grid">
+            <!-- Populated dynamically by unit1-puzzle.js -->
+          </div>
+
+          <!-- Controls & Feedback -->
+          <div class="flex flex-col items-center gap-3">
+            <button class="btn btn-secondary btn-sm" onclick="resetWordSearchSelection()" aria-label="Clear current letter selection">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
+              <span>Reset Selection</span>
+            </button>
+            <div id="ws-feedback-msg" style="display:none;" role="status"></div>
+          </div>
+        </div>
+
+        <!-- ===================================================================
+             LEVEL 2: Problem to Cause Matching
+             =================================================================== -->
+        <div class="tab-content" id="panel-lvl-2" role="tabpanel" aria-labelledby="tab-lvl-2">
+          <div style="text-align: center; margin-bottom: var(--space-4);">
+            <h3 style="margin-bottom: var(--space-2);">Level 2: Boiler Trouble Correlation</h3>
+            <p class="text-sm text-secondary" style="max-width: 60ch; margin: 0 auto;">
+              Match each industrial boiler problem with its accurate chemical cause and mechanism. Click a problem on the left, then click its matching cause on the right.
+            </p>
+          </div>
+
+          <div class="match-grid">
+            <!-- Problems Column -->
+            <div id="problems-col">
+              <h4 class="text-xs text-muted" style="text-transform:uppercase; letter-spacing:0.05em; margin-bottom:var(--space-3);">
+                Industrial Problem
+              </h4>
+              <div class="match-item-card" role="button" tabindex="0" onclick="selectProblem(this, 'scale')" onkeydown="if(event.key==='Enter'||event.key===' ') selectProblem(this, 'scale')">
+                <strong>Scale Formation</strong>
+                <p class="text-xs text-secondary" style="margin:4px 0 0;">Occurs in high-pressure thermal zones; leads to boiler wall overheating and localized tube rupture.</p>
+              </div>
+              <div class="match-item-card" role="button" tabindex="0" onclick="selectProblem(this, 'embrittlement')" onkeydown="if(event.key==='Enter'||event.key===' ') selectProblem(this, 'embrittlement')">
+                <strong>Caustic Embrittlement</strong>
+                <p class="text-xs text-secondary" style="margin:4px 0 0;">Dangerous intercrystalline cracking in boiler rivets, bends, and highly stressed joint seams.</p>
+              </div>
+              <div class="match-item-card" role="button" tabindex="0" onclick="selectProblem(this, 'sludge')" onkeydown="if(event.key==='Enter'||event.key===' ') selectProblem(this, 'sludge')">
+                <strong>Sludge Formation</strong>
+                <p class="text-xs text-secondary" style="margin:4px 0 0;">Soft, slimy non-adherent precipitate accumulating in colder parts of the boiler vessel.</p>
+              </div>
+            </div>
+
+            <!-- Causes Column -->
+            <div id="causes-col">
+              <h4 class="text-xs text-muted" style="text-transform:uppercase; letter-spacing:0.05em; margin-bottom:var(--space-3);">
+                Underlying Chemical Cause
+              </h4>
+              <div class="match-item-card" role="button" tabindex="0" onclick="selectCause(this, 'sludge')" onkeydown="if(event.key==='Enter'||event.key===' ') selectCause(this, 'sludge')">
+                <strong>Loose, slimy precipitate formed by MgCl<sub>2</sub> or MgCO<sub>3</sub></strong>
+                <p class="text-xs text-secondary" style="margin:4px 0 0;">Salts with higher solubility in hot water that settle as loose slimy mud in sluggish flow zones.</p>
+              </div>
+              <div class="match-item-card" role="button" tabindex="0" onclick="selectCause(this, 'embrittlement')" onkeydown="if(event.key==='Enter'||event.key===' ') selectCause(this, 'embrittlement')">
+                <strong>High alkalinity (NaOH) attacking boiler metal stress points</strong>
+                <p class="text-xs text-secondary" style="margin:4px 0 0;">Infiltrates microscopic hair cracks via capillary action, dissolving iron to form sodium ferroate.</p>
+              </div>
+              <div class="match-item-card" role="button" tabindex="0" onclick="selectCause(this, 'scale')" onkeydown="if(event.key==='Enter'||event.key===' ') selectCause(this, 'scale')">
+                <strong>Hard coating formed by CaSO<sub>4</sub> precipitation on hot surfaces</strong>
+                <p class="text-xs text-secondary" style="margin:4px 0 0;">Forms a hard, tenacious insulating crust directly on heat transfer surfaces (retrograde solubility).</p>
+              </div>
+            </div>
+          </div>
+
+          <div id="match-feedback" style="display:none; text-align:center; margin-top:var(--space-4);" role="status"></div>
+        </div>
+
+        <!-- ===================================================================
+             LEVEL 3: Virtual EDTA Titration Simulator (12.0 mL stoichiometric endpoint)
+             =================================================================== -->
+        <div class="tab-content" id="panel-lvl-3" role="tabpanel" aria-labelledby="tab-lvl-3">
+          <div style="text-align: center; margin-bottom: var(--space-4);">
+            <h3 style="margin-bottom: var(--space-2);">Level 3: Virtual EDTA Titration Simulator</h3>
+            <p class="text-sm text-secondary" style="max-width: 60ch; margin: 0 auto;">
+              Determine total water hardness. Add standard 0.01 M EDTA solution until the wine-red [M-EBT] complex breaks and free Eriochrome Black T turns the solution <strong>Steel Blue</strong>.
+            </p>
+          </div>
+
+          <div class="titration-stage">
+            <div style="font-family: var(--font-mono); font-size: var(--text-base); font-weight: 700; margin-bottom: var(--space-3);">
+              EDTA Burette Reading: <span id="edta-vol-display" style="color:var(--brand-primary); font-size:var(--text-xl);">0.0</span> mL
+            </div>
+
+            <!-- Conical Flask Visual Graphic -->
+            <div class="conical-flask" aria-label="Titration flask displaying indicator color change">
+              <div class="flask-liquid" id="flask-liquid"></div>
+            </div>
+
+            <p class="text-xs text-muted" style="margin-top:var(--space-3);">
+              Sample: 50 mL Hard Water + 2 mL NH<sub>4</sub>OH/NH<sub>4</sub>Cl Buffer (pH 10) + 2 drops EBT Indicator
+            </p>
+          </div>
+
+          <!-- Titration Controls -->
+          <div class="flex justify-center gap-3 flex-wrap">
+            <button class="btn btn-primary" onclick="addEdta(1.0)" aria-label="Add 1.0 mL EDTA">
+              <span>+ 1.0 mL EDTA</span>
+            </button>
+            <button class="btn btn-secondary" onclick="addEdta(0.1)" aria-label="Add 0.1 mL EDTA dropwise">
+              <span>+ 0.1 mL (Dropwise)</span>
+            </button>
+            <button class="btn btn-outline" onclick="resetTitration()" aria-label="Reset titration flask">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
+              <span>Reset Burette</span>
+            </button>
+          </div>
+
+          <div id="titration-feedback" class="card" style="display:none; margin-top:var(--space-5); text-align:center; padding:var(--space-4);" role="status"></div>
+        </div>
+
+        <!-- ===================================================================
+             LEVEL 4: Boiler Emergency Escape Room
+             =================================================================== -->
+        <div class="tab-content" id="panel-lvl-4" role="tabpanel" aria-labelledby="tab-lvl-4">
+          <div style="text-align: center; margin-bottom: var(--space-4);">
+            <h3 style="margin-bottom: var(--space-2);">Level 4: Boiler Emergency Escape Room</h3>
+            <p class="text-sm text-secondary" style="max-width: 60ch; margin: 0 auto;">
+              Critical plant crisis! Two severe boiler chemical faults have been detected in the thermal power plant. Select the proper conditioning reagents to avert disaster and clear the module!
+            </p>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:var(--space-4); margin-top:var(--space-4);">
+            <!-- Crisis 1 -->
+            <div class="card" style="padding:var(--space-5);">
+              <div class="flex items-center gap-2" style="margin-bottom:var(--space-2);">
+                <span class="badge badge-accent">Emergency Scenario 1</span>
+                <strong>High-Pressure CaSO<sub>4</sub> Scale Risk</strong>
+              </div>
+              <p class="text-sm text-secondary" style="margin-bottom:var(--space-3);">
+                The high-pressure boiler (operating at 35 atm) shows dangerous signs of adherent calcium sulfate scaling on heat exchange tubes. Which internal water conditioning treatment must you inject immediately?
+              </p>
+              <select id="s1" class="form-input" style="width:100%; max-width:500px;" aria-label="Scenario 1 Treatment Selection">
+                <option value="">-- Select Water Conditioning Treatment --</option>
+                <option value="caustic">Add concentrated NaOH to precipitate calcium</option>
+                <option value="correct">Calgon Conditioning: Sodium Hexametaphosphate (NaPO3)6 to form soluble complex</option>
+                <option value="cold">Blow down boiler with cold tap water</option>
+              </select>
+            </div>
+
+            <!-- Crisis 2 -->
+            <div class="card" style="padding:var(--space-5);">
+              <div class="flex items-center gap-2" style="margin-bottom:var(--space-2);">
+                <span class="badge badge-accent">Emergency Scenario 2</span>
+                <strong>Caustic Embrittlement Infiltration</strong>
+              </div>
+              <p class="text-sm text-secondary" style="margin-bottom:var(--space-3);">
+                Hairline cracks in the boiler rivet joints are undergoing intercrystalline stress corrosion due to local NaOH concentration. What chemical inhibitor must be added to neutralize this attack?
+              </p>
+              <select id="s2" class="form-input" style="width:100%; max-width:500px;" aria-label="Scenario 2 Treatment Selection">
+                <option value="">-- Select Crevice Sealing Chemical --</option>
+                <option value="acid">Concentrated Hydrochloric Acid (HCl)</option>
+                <option value="correct">Sodium Nitrate (NaNO3) or Tannin / Lignin to seal hairline crevices</option>
+                <option value="copper">Copper Sulfate Solution</option>
+              </select>
+            </div>
+
+            <!-- Action Button -->
+            <div style="text-align:center; margin-top:var(--space-2);">
+              <button class="btn btn-primary" onclick="checkEscapeRoom()" style="padding:var(--space-3) var(--space-8);">
+                <span>Avert Boiler Disaster &amp; Verify Treatments</span>
+              </button>
+            </div>
+
+            <div id="escape-feedback" style="display:none;" role="status"></div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Shared Footer -->
+  <footer id="site-footer"></footer>
+
+  <!-- Scripts -->
+  <script src="../assets/js/data-store.js"></script>
+  <script src="../assets/js/main.js"></script>
+  <script src="../assets/js/components.js"></script>
+  <script src="../assets/js/search.js"></script>
+  <script src="../assets/js/games/unit1-puzzle.js"></script>
+</body>
+</html>

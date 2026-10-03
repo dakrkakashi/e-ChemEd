@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Unit Module — e-chemEd | Sanjivani COE</title>
+  
+  <meta name="description" content="Engineering Chemistry syllabus unit learning module. Explore mind maps, video lectures, question banks, and quizzes.">
+  <link rel="icon" type="image/svg+xml" href="../assets/img/favicon.svg">
+
+  <!-- Core Design System CSS -->
+  <link rel="stylesheet" href="../assets/css/tokens.css">
+  <link rel="stylesheet" href="../assets/css/base.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/pages/unit.css">
+</head>
+<body>
+
+  <!-- Shared Header -->
+  <header id="site-header"></header>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <div class="container">
+      
+      <!-- Breadcrumbs -->
+      <nav class="breadcrumbs" aria-label="Breadcrumb">
+        <a href="../index.html">Home</a>
+        <span class="breadcrumb-separator">/</span>
+        <span>Units</span>
+        <span class="breadcrumb-separator">/</span>
+        <span class="breadcrumb-current" id="breadcrumb-unit-title">Loading Unit...</span>
+      </nav>
+
+      <!-- Unit Selector Strip -->
+      <div class="unit-selector-strip" id="unit-selector-strip" role="navigation" aria-label="Select Unit">
+        <!-- Rendered by JS -->
+      </div>
+
+      <!-- Unit Banner -->
+      <section class="unit-banner" id="unit-banner">
+        <div class="unit-banner-accent-bar" id="unit-accent-bar"></div>
+        <div class="unit-meta-row">
+          <span class="badge" id="unit-status-badge">Status</span>
+          <span class="badge" id="unit-number-badge" style="background:var(--bg-subtle); color:var(--text-main); border:1px solid var(--border-medium);">Unit 1</span>
+        </div>
+        <h1 class="unit-header-title" id="unit-title">Loading...</h1>
+        <p class="unit-header-desc" id="unit-description">Loading unit details...</p>
+
+        <!-- Syllabus Topics Breakdown -->
+        <div>
+          <strong style="font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted);">Syllabus Core Topics:</strong>
+          <div class="topics-chip-list" id="unit-topics-list"></div>
+        </div>
+      </section>
+
+      <!-- Unit Content Area (Switched between Live and Coming Soon) -->
+      <section id="unit-dynamic-content" aria-live="polite">
+        <!-- Rendered by JS based on unit.status -->
+      </section>
+
+    </div>
+  </main>
+
+  <!-- Marks Modal Dialog -->
+  <div class="modal-backdrop" id="marks-modal" role="dialog" aria-modal="true" aria-labelledby="marks-modal-title">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title" id="marks-modal-title">Quiz Evaluation Marks</h3>
+        <button type="button" class="btn-icon" data-close-modal aria-label="Close dialog">&times;</button>
+      </div>
+      <div class="modal-body" id="marks-modal-body">
+        <div style="text-align: center; padding: var(--space-4) 0;">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--brand-accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin:0 auto var(--space-3);"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+          <h4 style="margin-bottom: var(--space-2);">Marks will be published here</h4>
+          <p class="text-sm text-secondary" style="margin-bottom: var(--space-4);">
+            Evaluation scores for this quiz will be updated by the course instructor following laboratory and test reviews.
+          </p>
+          <div style="background:var(--bg-subtle); border:1px solid var(--border-light); border-radius:var(--radius-md); padding:var(--space-3); text-align:left; font-size:var(--text-xs); color:var(--text-muted);">
+            <strong>Notice:</strong> Please ensure your registered Roll Number and PRN match college records when submitting your Google Form.
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-close-modal>Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Shared Footer -->
+  <footer id="site-footer"></footer>
+
+  <!-- Scripts -->
+  <script src="../assets/js/data-store.js"></script>
+  <script src="../assets/js/main.js"></script>
+  <script src="../assets/js/components.js"></script>
+  <script src="../assets/js/search.js"></script>
+  
+  <!-- Dynamic Unit Controller Script -->
+  <script>
+    (async function () {
+      'use strict';
+
+      const urlParams = new URLSearchParams(window.location.search);
+      let currentUnitId = parseInt(urlParams.get('u'), 10) || 1;
+      if (currentUnitId < 1 || currentUnitId > 5) currentUnitId = 1;
+
+      try {
+        const loader = window.loadEchemData || (p => fetch(p).then(r => r.json()));
+        const [units, quizzesData] = await Promise.all([
+          loader('../data/units.json'),
+          loader('../data/quizzes/unit1.json')
+        ]);
+
+        const unit = units.find(u => u.unitNumber === currentUnitId) || units[0];
+
+        // Update Title & Meta
+        document.title = `Unit ${unit.unitNumber}: ${unit.shortTitle} — e-chemEd`;
+        document.getElementById('breadcrumb-unit-title').textContent = `Unit ${unit.unitNumber}: ${unit.shortTitle}`;
+
+        // Render Unit Selector Strip
+        const stripEl = document.getElementById('unit-selector-strip');
+        stripEl.innerHTML = units.map(u => {
+          const isActive = u.unitNumber === unit.unitNumber;
+          return `
+            <a href="unit.html?u=${u.unitNumber}" class="unit-nav-pill ${isActive ? 'active' : ''}">
+              <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background-color:var(--unit-${u.unitNumber});"></span>
+              Unit ${u.unitNumber}: ${u.shortTitle}
+              <span class="badge ${u.status === 'live' ? 'badge-live' : 'badge-soon'}" style="font-size:10px; padding:1px 5px;">${u.status === 'live' ? 'Live' : 'Soon'}</span>
+            </a>
+          `;
+        }).join('');
+
+        // Render Unit Banner Details
+        document.getElementById('unit-accent-bar').style.backgroundColor = `var(--unit-${unit.unitNumber})`;
+        document.getElementById('unit-number-badge').textContent = `Unit ${unit.unitNumber}`;
+        const statusBadge = document.getElementById('unit-status-badge');
+        statusBadge.className = `badge ${unit.status === 'live' ? 'badge-live' : 'badge-soon'}`;
+        statusBadge.textContent = unit.status === 'live' ? 'Live Syllabus' : 'Coming Soon';
+
+        document.getElementById('unit-title').textContent = `Unit ${unit.unitNumber}: ${unit.title}`;
+        document.getElementById('unit-description').textContent = unit.description;
+
+        const topicsEl = document.getElementById('unit-topics-list');
+        topicsEl.innerHTML = (unit.topics || []).map(t => `<span class="topic-chip">${t}</span>`).join('');
+
+        // Render Unit Dynamic Content
+        const contentContainer = document.getElementById('unit-dynamic-content');
+
+        if (unit.status === 'live') {
+          // Live Unit (Unit 1) -> Tabbed Presentation
+          contentContainer.innerHTML = `
+            <h2 class="sr-only">Unit Content Modules</h2>
+            <div class="tabs-nav" role="tablist">
+              <button class="tab-btn active" onclick="switchUnitTab(this, 'tab-mindmap')" role="tab" aria-selected="true">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+                Mind Map
+              </button>
+              <button class="tab-btn" onclick="switchUnitTab(this, 'tab-video')" role="tab" aria-selected="false">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg>
+                Video Lecture
+              </button>
+              <button class="tab-btn" onclick="switchUnitTab(this, 'tab-qbank')" role="tab" aria-selected="false">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+                Question Bank
+              </button>
+              <button class="tab-btn" onclick="switchUnitTab(this, 'tab-quizzes')" role="tab" aria-selected="false">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+                Quizzes (3)
+              </button>
+              <button class="tab-btn" onclick="switchUnitTab(this, 'tab-games')" role="tab" aria-selected="false">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"></rect><circle cx="8" cy="12" r="2"></circle><path d="M15 12h.01"></path><path d="M18 12h.01"></path></svg>
+                Unit Game
+              </button>
+            </div>
+
+            <!-- TAB 1: Mind Map -->
+            <div id="tab-mindmap" class="tab-content active" role="tabpanel">
+              <div class="card mind-map-preview-card">
+                <div class="mind-map-icon">
+                  <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                </div>
+                <h3 style="font-size:var(--text-2xl); margin-bottom:var(--space-2);">Unit 1 Comprehensive Mind Map</h3>
+                <p class="text-secondary" style="max-width:55ch; margin-bottom:var(--space-6);">
+                  Structured concept diagram mapping water hardness definitions, EDTA complexometry, zeolite softening reactions, and boiler problems.
+                </p>
+                <div class="flex gap-4 flex-wrap justify-center">
+                  <a href="../assets/docs/unit1-mind-maps.pdf" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-lg" onclick="window.EchemProgress.markActivity(1, 'mindMapRead')">
+                    Open Mind Map PDF &rarr;
+                  </a>
+                  <a href="../assets/docs/unit1-mind-maps.pdf" download class="btn btn-secondary btn-lg">
+                    Download Offline Copy
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            <!-- TAB 2: Video Lecture -->
+            <div id="tab-video" class="tab-content" role="tabpanel">
+              <div class="lecture-video-player-wrap">
+                <video controls playsinline preload="none" poster="../assets/img/video-poster.svg" id="unit1-video-el" onplay="window.EchemProgress.markActivity(1, 'videoWatched')">
+                  <source src="../assets/video/unit1-lecture.mp4" type="video/mp4">
+                  Your browser does not support the video tag.
+                </video>
+              </div>
+              <div style="max-width: 900px; margin: var(--space-6) auto 0; padding: var(--space-4); background: var(--bg-surface); border-radius: var(--radius-md); border: 1px solid var(--border-light);">
+                <h4>Faculty Video Lecture &bull; Unit 1</h4>
+                <p class="text-sm text-secondary" style="margin-bottom: var(--space-2);">
+                  Department of Engineering Science &amp; Humanities &mdash; Video Lecture Series.
+                </p>
+                <p class="text-xs text-muted">
+                  Tip: Use the full-screen toggle on the media controls for optimal visibility of chemical reaction slides.
+                </p>
+              </div>
+            </div>
+
+            <!-- TAB 3: Question Bank -->
+            <div id="tab-qbank" class="tab-content" role="tabpanel">
+              <div class="card" style="text-align: center; padding: var(--space-8);">
+                <h3>Unit 1 Question Bank &amp; Solved Numericals</h3>
+                <p class="text-secondary" style="max-width: 60ch; margin: 0 auto var(--space-6);">
+                  Comprehensive collection of 9 theory questions and 5 step-by-step solved numerical problems on EDTA titration, hardness units, and MgCl<sub>2</sub> equivalents.
+                </p>
+                <a href="question-bank.html" class="btn btn-primary btn-lg" onclick="window.EchemProgress.markActivity(1, 'questionBankViewed')">
+                  Open Interactive Question Bank &rarr;
+                </a>
+              </div>
+            </div>
+
+            <!-- TAB 4: Quizzes -->
+            <div id="tab-quizzes" class="tab-content" role="tabpanel">
+              <div style="margin-bottom:var(--space-6);">
+                <h3>Unit 1 Evaluation Quizzes</h3>
+                <p class="text-secondary">Complete the official Google Form evaluations below. Once marked by faculty, performance feedback will be displayed via the Marks button.</p>
+              </div>
+
+              <div class="grid gap-4" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));">
+                ${quizzesData.quizzes.map(q => `
+                  <div class="card" style="display:flex; flex-direction:column; justify-content:space-between; height:100%;">
+                    <div>
+                      <div class="badge" style="background:var(--unit-1-bg); color:var(--unit-1); margin-bottom:var(--space-3); border:1px solid var(--unit-1-border);">
+                        Quiz ${q.quizNumber}
+                      </div>
+                      <h4 style="font-size:var(--text-lg); margin-bottom:var(--space-2);">${q.title}</h4>
+                      <p class="text-sm text-secondary" style="margin-bottom:var(--space-4);">${q.description}</p>
+                    </div>
+
+                    <div style="display:flex; gap:var(--space-3); align-items:center; margin-top:var(--space-4);">
+                      <a href="${q.googleFormUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm flex-1" onclick="window.EchemProgress.markActivity(1, 'quizCompleted')">
+                        Open Quiz Form &rarr;
+                      </a>
+                      <button type="button" class="btn btn-secondary btn-sm" onclick="showQuizMarksModal(${q.quizNumber}, '${q.title.replace(/'/g, "\\'")}')">
+                        Marks
+                      </button>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+
+            <!-- TAB 5: Unit Game -->
+            <div id="tab-games" class="tab-content" role="tabpanel">
+              <div class="card" style="text-align: center; padding: var(--space-8);">
+                <div class="mind-map-icon" style="background-color:rgba(245,158,11,0.1); color:var(--brand-accent); margin:0 auto var(--space-4);">
+                  <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                </div>
+                <h3>Water Processing Challenge (Levels 1–4)</h3>
+                <p class="text-secondary" style="max-width: 60ch; margin: 0 auto var(--space-6);">
+                  Play the interactive puzzle suite: adjacent word search, problem matching, virtual EDTA titration simulator, and boiler emergency escape room.
+                </p>
+                <a href="../games/unit1-puzzle.html" class="btn btn-accent btn-lg" onclick="window.EchemProgress.markActivity(1, 'gamePlayed')">
+                  Play Unit 1 Challenge &rarr;
+                </a>
+              </div>
+            </div>
+          `;
+        } else {
+          // Coming Soon Unit (Units 2–5)
+          contentContainer.innerHTML = `
+            <div class="coming-soon-card">
+              <div class="coming-soon-icon">
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+              </div>
+              <h2 class="coming-soon-title" style="font-size:var(--text-2xl);">Unit ${unit.unitNumber} Content Coming Soon</h2>
+              <p class="coming-soon-text">
+                Teaching modules, notes, and interactive quizzes for <strong>${unit.title}</strong> are being finalized by the Department of Engineering Science &amp; Humanities for the current academic session.
+              </p>
+
+              ${unit.unitNumber === 2 ? `
+                <div style="margin: var(--space-6) 0; padding: var(--space-5); background: var(--bg-subtle); border-radius: var(--radius-lg); border: 1px solid var(--border-medium); max-width: 580px; margin-left: auto; margin-right: auto;">
+                  <span class="badge" style="background:var(--unit-2-bg); color:var(--unit-2); margin-bottom:var(--space-2); border:1px solid var(--unit-2-border);">Early Access Arcade Available</span>
+                  <h3 style="margin: var(--space-2) 0; font-size:var(--text-lg);">Chem-Arcade: Electrochemical Cell Simulator</h3>
+                  <p class="text-sm text-secondary" style="margin-bottom: var(--space-4);">
+                    Test your knowledge of batteries, solar PV cells, and supercapacitors with our interactive game arcade.
+                  </p>
+                  <a href="../games/unit2-arcade.html" class="btn btn-accent">Launch Unit 2 Chem-Arcade &rarr;</a>
+                </div>
+              ` : ''}
+
+              <div class="flex gap-4 justify-center flex-wrap" style="margin-top: var(--space-6);">
+                <button class="btn btn-secondary btn-disabled" disabled title="Mind Map will be published soon">
+                  Mind Map (Soon)
+                </button>
+                <button class="btn btn-secondary btn-disabled" disabled title="Video Lecture will be published soon">
+                  Video Lecture (Soon)
+                </button>
+                <button class="btn btn-secondary btn-disabled" disabled title="Question Bank will be published soon">
+                  Question Bank (Soon)
+                </button>
+                <button class="btn btn-secondary btn-disabled" disabled title="Quizzes will be published soon">
+                  Quizzes (Soon)
+                </button>
+              </div>
+              <div style="margin-top: var(--space-8);">
+                <a href="unit.html?u=1" class="btn btn-primary">&larr; Return to Active Unit 1: Water Processing</a>
+              </div>
+            </div>
+          `;
+        }
+
+        // Auto-scroll active unit pill into view horizontally on mobile
+        setTimeout(() => {
+          const activePill = document.querySelector('.unit-nav-pill.active');
+          if (activePill) {
+            activePill.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+          }
+        }, 100);
+      } catch (err) {
+        console.error('Error loading unit details:', err);
+      }
+    })();
+
+    // Tab switching helper
+    window.switchUnitTab = function (btn, tabId) {
+      document.querySelectorAll('.tab-btn').forEach(b => {
+        b.classList.remove('active');
+        b.setAttribute('aria-selected', 'false');
+      });
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+      btn.classList.add('active');
+      btn.setAttribute('aria-selected', 'true');
+      const target = document.getElementById(tabId);
+      if (target) target.classList.add('active');
+    };
+
+    // Marks Modal Trigger
+    window.showQuizMarksModal = function (quizNum, quizTitle) {
+      const modal = document.getElementById('marks-modal');
+      const titleEl = document.getElementById('marks-modal-title');
+      if (titleEl) titleEl.textContent = `Quiz ${quizNum}: Performance Status`;
+      if (modal) modal.classList.add('open');
+    };
+  </script>
+</body>
+</html>

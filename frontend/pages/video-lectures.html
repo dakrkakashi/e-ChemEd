@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Video Lectures — e-chemEd | Sanjivani COE</title>
+  
+  <meta name="description" content="Engineering Chemistry recorded video lectures by faculty at Sanjivani College of Engineering.">
+  <link rel="icon" type="image/svg+xml" href="../assets/img/favicon.svg">
+
+  <!-- Core Design System CSS -->
+  <link rel="stylesheet" href="../assets/css/tokens.css">
+  <link rel="stylesheet" href="../assets/css/base.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/pages/unit.css">
+</head>
+<body>
+
+  <!-- Shared Header -->
+  <header id="site-header"></header>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <div class="container">
+      
+      <!-- Breadcrumbs -->
+      <nav class="breadcrumbs" aria-label="Breadcrumb">
+        <a href="../index.html">Home</a>
+        <span class="breadcrumb-separator">/</span>
+        <span class="breadcrumb-current">Video Lectures</span>
+      </nav>
+
+      <!-- Page Header -->
+      <div style="margin-bottom: var(--space-8);">
+        <h1>Faculty Video Lectures</h1>
+        <p class="text-secondary" style="max-width: 65ch;">
+          High-definition recorded lectures and laboratory demonstrations delivered by department faculty.
+        </p>
+      </div>
+
+      <!-- Featured Video: Unit 1 -->
+      <section class="card" style="margin-bottom: var(--space-12); padding: var(--space-8);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--space-4); flex-wrap:wrap; gap:var(--space-2);">
+          <div class="flex items-center gap-2">
+            <span class="badge badge-live">Active Lecture</span>
+            <span class="badge" style="background:var(--unit-1-bg); color:var(--unit-1); border:1px solid var(--unit-1-border);">Unit 1</span>
+          </div>
+          <span class="text-xs text-muted">Department of ESH &bull; Video Lecture</span>
+        </div>
+
+        <h2 style="font-size:var(--text-2xl); margin-bottom:var(--space-3);">
+          Unit 1: Water Processing &amp; Environmental Sustainability
+        </h2>
+        <p class="text-secondary" style="margin-bottom:var(--space-6); max-width:75ch;">
+          Detailed classroom lecture on hardness calculation methodology, complexometric titration reactions with EDTA, 
+          zeolite softening and regeneration, and boiler trouble prevention.
+        </p>
+
+        <!-- Responsive Video Container -->
+        <div class="lecture-video-player-wrap">
+          <video controls playsinline preload="none" poster="../assets/img/video-poster.svg" style="width:100%; display:block;" onplay="window.EchemProgress.markActivity(1, 'videoWatched')">
+            <source src="../assets/video/unit1-lecture.mp4" type="video/mp4">
+            Your browser does not support HTML5 video playback.
+          </video>
+        </div>
+
+        <div class="flex justify-between items-center flex-wrap gap-4" style="margin-top:var(--space-6); padding-top:var(--space-4); border-top:1px solid var(--border-light);">
+          <div class="text-xs text-muted">
+            Video format: MP4 (H.264 / AAC) &bull; Optimized for mobile &amp; desktop playback
+          </div>
+          <div class="flex gap-3">
+            <a href="unit.html?u=1" class="btn btn-outline btn-sm">Open Unit 1 Hub &rarr;</a>
+            <a href="../assets/video/unit1-lecture.mp4" download class="btn btn-secondary btn-sm">Download Video</a>
+          </div>
+        </div>
+      </section>
+
+      <!-- Upcoming Units Video Directory -->
+      <section>
+        <h3 style="margin-bottom: var(--space-4);">Upcoming Units in Video Series</h3>
+        <div class="grid gap-4" style="grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));">
+          
+          <div class="card">
+            <span class="badge badge-soon" style="margin-bottom:var(--space-2);">Unit 2 &bull; Recording</span>
+            <h4>Electrochemical Energy Storage Systems</h4>
+            <p class="text-xs text-secondary" style="margin-top:var(--space-2);">Lectures on lithium battery chemistry and solar photovoltaic conversion.</p>
+          </div>
+
+          <div class="card">
+            <span class="badge badge-soon" style="margin-bottom:var(--space-2);">Unit 3 &bull; Scheduled</span>
+            <h4>Flexible Electronics &amp; Optoelectronic Materials</h4>
+            <p class="text-xs text-secondary" style="margin-top:var(--space-2);">Conductive polymer synthesis, OLED displays, and flexible circuits.</p>
+          </div>
+
+          <div class="card">
+            <span class="badge badge-soon" style="margin-bottom:var(--space-2);">Unit 4 &bull; Scheduled</span>
+            <h4>Nanomaterials, Electrochemistry &amp; Thermal Analysis</h4>
+            <p class="text-xs text-secondary" style="margin-top:var(--space-2);">Carbon nanotubes, cyclic voltammetry, and TGA instrumentation.</p>
+          </div>
+
+          <div class="card">
+            <span class="badge badge-soon" style="margin-bottom:var(--space-2);">Unit 5 &bull; Scheduled</span>
+            <h4>Energy Generation &amp; Sustainable Fuels</h4>
+            <p class="text-xs text-secondary" style="margin-top:var(--space-2);">Calorific value determination, bomb calorimeter, and green hydrogen.</p>
+          </div>
+
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- Shared Footer -->
+  <footer id="site-footer"></footer>
+
+  <!-- Scripts -->
+  <script src="../assets/js/main.js"></script>
+  <script src="../assets/js/components.js"></script>
+  <script src="../assets/js/search.js"></script>
+</body>
+</html>

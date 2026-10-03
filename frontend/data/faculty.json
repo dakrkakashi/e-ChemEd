@@ -1,0 +1,17 @@
+{
+  "name": "Dr. S. S. Chine",
+  "title": "Assistant Professor",
+  "department": "Electronics & Computer Engineering",
+  "associatedDepartment": "Electronics & Computer Engineering",
+  "institution": "Sanjivani College of Engineering, Kopargaon",
+  "experience": "17 Years",
+  "qualifications": [
+    {
+      "level": "Doctorate",
+      "degree": "Ph.D. in Organic Chemistry"
+    }
+  ],
+  "photo": "assets/img/faculty-placeholder.svg",
+  "cvDocument": "",
+  "cvAvailable": false
+}

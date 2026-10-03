@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Interactive Periodic Table — e-chemEd | Sanjivani COE</title>
+  
+  <meta name="description" content="Explore all 118 chemical elements with dynamic category filters, electron configurations, ionization energies, and atomic properties.">
+  <link rel="icon" type="image/svg+xml" href="../assets/img/favicon.svg">
+
+  <!-- Core Design System CSS -->
+  <link rel="stylesheet" href="../assets/css/tokens.css">
+  <link rel="stylesheet" href="../assets/css/base.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/pages/games.css">
+</head>
+<body>
+
+  <!-- Shared Header -->
+  <header id="site-header"></header>
+
+  <!-- Main Content -->
+  <main class="main-content ptable-page-wrap">
+    <div class="container" style="max-width: 1320px;">
+      
+      <!-- Breadcrumbs -->
+      <nav class="breadcrumbs" aria-label="Breadcrumb">
+        <a href="../index.html">Home</a>
+        <span class="breadcrumb-separator">/</span>
+        <a href="../pages/games.html">Games Hub</a>
+        <span class="breadcrumb-separator">/</span>
+        <span class="breadcrumb-current">Periodic Table</span>
+      </nav>
+
+      <!-- Page Header & Search Bar -->
+      <div class="ptable-header-bar">
+        <div>
+          <h1>Interactive Periodic Table of Elements</h1>
+          <p class="text-secondary" style="max-width: 65ch; margin: 0;">
+            Comprehensive physical and chemical reference containing all 118 known elements. Select any element to inspect its properties.
+          </p>
+        </div>
+
+        <div class="ptable-controls-row">
+          <div class="search-input-wrap" style="width: 260px; max-width: 100%;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--text-muted);"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <input type="text" id="ptable-search-input" placeholder="Search by name, symbol, or #..." autocomplete="off" aria-label="Search periodic table elements">
+          </div>
+
+          <!-- View Mode Toggle (Cards vs Full Grid) -->
+          <div class="ptable-view-toggle" role="group" aria-label="Periodic table display mode">
+            <button type="button" class="view-toggle-btn" id="toggle-cards-btn" data-mode="cards" aria-pressed="false">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+              <span>Cards</span>
+            </button>
+            <button type="button" class="view-toggle-btn" id="toggle-grid-btn" data-mode="grid" aria-pressed="false">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h18v18H3zM3 9h18M3 15h18M9 3v18M15 3v18"/></svg>
+              <span>Grid</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Category Filter Bar (Dynamically populated from data's 11 categories) -->
+      <div class="ptable-categories-bar" id="category-filters-container" role="toolbar" aria-label="Filter elements by chemical category">
+        <!-- Injected by periodic-table.js -->
+      </div>
+
+      <!-- Card View Container (Default below 960px) -->
+      <div class="ptable-cards-container" id="ptable-cards-view" role="region" aria-label="118 Elements Card View">
+        <div class="ptable-cards-grid" id="ptable-cards-grid">
+          <!-- Rendered dynamically by periodic-table.js -->
+        </div>
+      </div>
+
+      <!-- Responsive Horizontal Scroll Container (Grid View) -->
+      <div class="ptable-scroll-container" id="ptable-grid-view">
+        <div class="ptable-grid" id="ptable-main-grid" role="region" aria-label="118 Elements Periodic Table Grid">
+          <!-- Rendered dynamically by periodic-table.js -->
+        </div>
+      </div>
+
+      <!-- Helpful usage tips -->
+      <div class="flex justify-between items-center text-xs text-muted flex-wrap gap-2" style="margin-top:var(--space-2);">
+        <span>Tip: Use arrow keys / Tab to navigate elements, and Enter to inspect details. Swipe horizontally on mobile.</span>
+        <span>Standard IUPAC periodic layout &bull; 118 Elements Grounded</span>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Slide-Over Element Inspector Drawer -->
+  <aside class="el-detail-panel" id="element-detail-panel" role="complementary" aria-label="Element Details Inspector">
+    <!-- Populated by periodic-table.js on click/keyboard selection -->
+  </aside>
+
+  <!-- Shared Footer -->
+  <footer id="site-footer"></footer>
+
+  <!-- Scripts -->
+  <script src="../assets/js/data-store.js"></script>
+  <script src="../assets/js/main.js"></script>
+  <script src="../assets/js/components.js"></script>
+  <script src="../assets/js/search.js"></script>
+  <script src="../assets/js/games/periodic-table.js"></script>
+</body>
+</html>

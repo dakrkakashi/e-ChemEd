@@ -1,0 +1,57 @@
+# Dependencies
+node_modules/
+*/node_modules/
+
+# Environment files & Secrets
+.env
+.env.*
+*.env
+backend/.env
+!backend/.env.example
+
+# Sensitive Faculty PII (Photo & CV)
+frontend/assets/img/chinemam.jpg
+frontend/assets/docs/chinemam.pdf
+*chinemam*
+
+# SQLite Database & Data Storage
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+backend/data/*
+!backend/data/.gitkeep
+*.csv
+
+# Process IDs
+.pids
+.pids/
+*.pid
+
+# Audit & Screenshot Output Folders
+screenshots/
+audit/
+audit-results/
+.edge_*/
+.edge_axe_profile/
+.edge_snap_profile/
+.kombai/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+backend_out.log
+backend_err.log
+
+# OS & Editor Junk
+.DS_Store
+Thumbs.db
+ehthumbs.db
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.bak
+*.tmp
