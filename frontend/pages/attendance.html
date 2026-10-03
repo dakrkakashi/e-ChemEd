@@ -12,6 +12,7 @@
   <link rel="stylesheet" href="../assets/css/tokens.css">
   <link rel="stylesheet" href="../assets/css/base.css">
   <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/motion.css">
   
   <style>
     .form-card {
@@ -110,7 +111,7 @@
       </nav>
 
       <!-- Page Header -->
-      <div style="text-align: center; margin-bottom: var(--space-8);">
+      <div class="page-header-reveal" style="text-align: center; margin-bottom: var(--space-8);">
         <h1>Lecture &amp; Lab Session Attendance</h1>
         <p class="text-secondary" style="max-width: 55ch; margin: 0 auto;">
           First-year engineering students must log their attendance for every Engineering Chemistry session.
@@ -238,7 +239,7 @@
       </div>
       <div class="modal-body" style="text-align: center; padding: var(--space-6) var(--space-4);">
         <div id="att-modal-icon-wrap" style="width:56px; height:56px; border-radius:50%; background:rgba(16,185,129,0.15); color:#047857; display:flex; align-items:center; justify-content:center; margin:0 auto var(--space-4);">
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" class="svg-draw-check"></polyline></svg>
         </div>
         <h4 id="att-modal-heading">Submitted, please confirm with your faculty</h4>
         <p class="text-sm text-secondary" style="margin-top:var(--space-2); margin-bottom:var(--space-4);" id="attendance-confirm-details">
@@ -259,6 +260,7 @@
 
   <!-- Scripts -->
   <script src="../assets/js/data-store.js"></script>
+  <script src="../assets/js/motion.js"></script>
   <script src="../assets/js/main.js"></script>
   <script src="../assets/js/components.js"></script>
   <script src="../assets/js/search.js"></script>
@@ -357,19 +359,27 @@
         document.querySelectorAll('.form-group').forEach(g => g.classList.remove('has-error'));
 
         if (!name) {
-          document.getElementById('group-name').classList.add('has-error');
+          const g = document.getElementById('group-name');
+          g.classList.add('has-error');
+          if (window.EchemMotion && window.EchemMotion.shake) window.EchemMotion.shake(g);
           isValid = false;
         }
         if (!roll) {
-          document.getElementById('group-roll').classList.add('has-error');
+          const g = document.getElementById('group-roll');
+          g.classList.add('has-error');
+          if (window.EchemMotion && window.EchemMotion.shake) window.EchemMotion.shake(g);
           isValid = false;
         }
         if (!division) {
-          document.getElementById('group-div').classList.add('has-error');
+          const g = document.getElementById('group-div');
+          g.classList.add('has-error');
+          if (window.EchemMotion && window.EchemMotion.shake) window.EchemMotion.shake(g);
           isValid = false;
         }
         if (!prn) {
-          document.getElementById('group-prn').classList.add('has-error');
+          const g = document.getElementById('group-prn');
+          g.classList.add('has-error');
+          if (window.EchemMotion && window.EchemMotion.shake) window.EchemMotion.shake(g);
           isValid = false;
         }
 

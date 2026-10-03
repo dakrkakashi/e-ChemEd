@@ -12,6 +12,7 @@
   <link rel="stylesheet" href="../assets/css/tokens.css">
   <link rel="stylesheet" href="../assets/css/base.css">
   <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/motion.css">
 
   <style>
     .admin-container {
@@ -124,7 +125,7 @@
       </nav>
 
       <!-- Page Header -->
-      <div style="margin-bottom: var(--space-6);">
+      <div class="page-header-reveal" style="margin-bottom: var(--space-6);">
         <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:var(--space-4);">
           <div>
             <h1>Faculty Attendance Administration</h1>
@@ -266,6 +267,7 @@
 
   <!-- Scripts -->
   <script src="../assets/js/data-store.js"></script>
+  <script src="../assets/js/motion.js"></script>
   <script src="../assets/js/main.js"></script>
   <script src="../assets/js/components.js"></script>
   <script src="../assets/js/config.js"></script>
@@ -348,6 +350,9 @@
           if (res.status === 401 || !data.ok) {
             authMessage.style.color = 'var(--unit-5)';
             authMessage.textContent = 'Access Denied: The ADMIN_KEY entered does not match backend configuration.';
+            if (window.EchemMotion && window.EchemMotion.shake) {
+              window.EchemMotion.shake(document.getElementById('admin-key-input'));
+            }
             controlsPanel.style.display = 'none';
             clearKeyBtn.style.display = 'none';
             return;
@@ -451,13 +456,22 @@
       });
 
       function updateMetrics(records) {
-        document.getElementById('stat-total-records').textContent = records.length;
+        const totalEl = document.getElementById('stat-total-records');
+        const todayEl = document.getElementById('stat-today-records');
+        const divEl = document.getElementById('stat-active-divisions');
         const today = new Date().toISOString().split('T')[0];
         const todayCount = records.filter(r => r.date === today).length;
-        document.getElementById('stat-today-records').textContent = todayCount;
+        const uniqueDivisions = new Set(records.map(r => r.division)).size;
 
-        const uniqueDivisions = new Set(records.map(r => r.division));
-        document.getElementById('stat-active-divisions').textContent = uniqueDivisions.size;
+        if (window.EchemMotion && window.EchemMotion.animateNumber) {
+          window.EchemMotion.animateNumber(totalEl, 0, records.length, 400);
+          window.EchemMotion.animateNumber(todayEl, 0, todayCount, 400);
+          window.EchemMotion.animateNumber(divEl, 0, uniqueDivisions, 400);
+        } else {
+          totalEl.textContent = records.length;
+          todayEl.textContent = todayCount;
+          divEl.textContent = uniqueDivisions;
+        }
       }
 
       function renderRoster(records) {

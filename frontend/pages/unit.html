@@ -12,6 +12,7 @@
   <link rel="stylesheet" href="../assets/css/tokens.css">
   <link rel="stylesheet" href="../assets/css/base.css">
   <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/motion.css">
   <link rel="stylesheet" href="../assets/css/pages/unit.css">
 </head>
 <body>
@@ -38,7 +39,7 @@
       </div>
 
       <!-- Unit Banner -->
-      <section class="unit-banner" id="unit-banner">
+      <section class="unit-banner page-header-reveal" id="unit-banner">
         <div class="unit-banner-accent-bar" id="unit-accent-bar"></div>
         <div class="unit-meta-row">
           <span class="badge" id="unit-status-badge">Status</span>
@@ -92,6 +93,7 @@
 
   <!-- Scripts -->
   <script src="../assets/js/data-store.js"></script>
+  <script src="../assets/js/motion.js"></script>
   <script src="../assets/js/main.js"></script>
   <script src="../assets/js/components.js"></script>
   <script src="../assets/js/search.js"></script>
@@ -325,6 +327,10 @@
             activePill.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
           }
         }, 100);
+        // Refresh motion observers for dynamically injected modules
+        if (window.EchemMotion && window.EchemMotion.refresh) {
+          window.EchemMotion.refresh();
+        }
       } catch (err) {
         console.error('Error loading unit details:', err);
       }

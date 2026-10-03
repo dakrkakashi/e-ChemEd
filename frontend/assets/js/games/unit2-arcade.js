@@ -106,9 +106,14 @@
   };
 
   function addScore(pts) {
+    const oldScore = globalScore;
     globalScore += pts;
     const scoreEl = document.getElementById('global-score');
-    if (scoreEl) scoreEl.textContent = globalScore;
+    if (scoreEl && window.EchemMotion) {
+      window.EchemMotion.animateNumber(scoreEl, oldScore, globalScore, 400);
+    } else if (scoreEl) {
+      scoreEl.textContent = globalScore;
+    }
     if (window.EchemProgress) window.EchemProgress.markActivity(2, 'gamePlayed');
   }
 
@@ -218,6 +223,10 @@
       showMatchmakerFeedback("Incorrect match! Review electrochemical principles and try another definition.", false);
       const tBtn = document.getElementById(`term-${selectedTermId}`);
       if (tBtn) {
+        if (window.EchemMotion && window.EchemMotion.shake) {
+          window.EchemMotion.shake(tBtn);
+          window.EchemMotion.shake(defBtn);
+        }
         tBtn.classList.add('mismatch');
         setTimeout(() => tBtn.classList.remove('mismatch'), 500);
       }
@@ -300,6 +309,11 @@
       testBtn.className = "btn btn-secondary";
       testBtn.style.opacity = '0.5';
       testBtn.style.cursor = 'not-allowed';
+    }
+
+    const slotsGrid = document.getElementById('assembly-slots');
+    if (slotsGrid) {
+      slotsGrid.classList.remove('cell-energized', 'assembly-fault');
     }
 
     placedComponents = [null, null, null];
@@ -408,10 +422,15 @@
     const resTitle = document.getElementById('builder-result-title');
     const resDesc = document.getElementById('builder-result-desc');
     const voltEl = document.getElementById('voltage-output');
+    const slotsGrid = document.getElementById('assembly-slots');
 
     if (resBox) resBox.classList.remove('hidden');
 
     if (isCorrect) {
+      if (slotsGrid) {
+        slotsGrid.classList.remove('assembly-fault');
+        slotsGrid.classList.add('cell-energized');
+      }
       if (badge) {
         badge.textContent = "ENERGIZED";
         badge.className = "badge badge-live";
@@ -425,6 +444,13 @@
       addScore(50);
       markModuleComplete('builder', 'Electrochemical Cell Builder');
     } else {
+      if (slotsGrid) {
+        slotsGrid.classList.remove('cell-energized');
+        slotsGrid.classList.add('assembly-fault');
+        if (window.EchemMotion && window.EchemMotion.shake) {
+          window.EchemMotion.shake(slotsGrid);
+        }
+      }
       if (badge) {
         badge.textContent = "SHORT-CIRCUITED";
         badge.className = "badge badge-soon";
@@ -582,16 +608,24 @@
 
     if (selectedIndex === correctIndex) {
       tycoonStreak++;
+      const oldPower = tycoonPower;
       tycoonPower += 250;
       addScore(40);
+      const wattsEl = document.getElementById('tycoon-watts');
+      if (wattsEl && window.EchemMotion) {
+        window.EchemMotion.animateNumber(wattsEl, oldPower, tycoonPower, 500, v => `${Math.round(v)} kW`);
+      } else if (wattsEl) {
+        wattsEl.textContent = `${tycoonPower} kW`;
+      }
     } else {
       tycoonStreak = 0;
+      const wrongBtn = document.getElementById(`tycoon-opt-${selectedIndex}`);
+      if (wrongBtn && window.EchemMotion && window.EchemMotion.shake) {
+        window.EchemMotion.shake(wrongBtn);
+      }
     }
 
     // Update facility metrics
-    const wattsEl = document.getElementById('tycoon-watts');
-    if (wattsEl) wattsEl.textContent = `${tycoonPower} kW`;
-
     const solarEl = document.getElementById('facility-solar');
     if (solarEl) solarEl.textContent = "Online (98%)";
 
@@ -603,7 +637,10 @@
     if (effText) effText.textContent = `${effPercent}%`;
 
     const effBar = document.getElementById('efficiency-bar');
-    if (effBar) effBar.style.width = `${effPercent}%`;
+    if (effBar) {
+      effBar.style.transform = `scaleX(${effPercent / 100})`;
+      effBar.style.width = '100%';
+    }
 
     const explText = document.getElementById('tycoon-expl-text');
     if (explText) explText.textContent = q.explanation;

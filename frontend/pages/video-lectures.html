@@ -12,6 +12,7 @@
   <link rel="stylesheet" href="../assets/css/tokens.css">
   <link rel="stylesheet" href="../assets/css/base.css">
   <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/motion.css">
   <link rel="stylesheet" href="../assets/css/pages/unit.css">
 </head>
 <body>
@@ -31,7 +32,7 @@
       </nav>
 
       <!-- Page Header -->
-      <div style="margin-bottom: var(--space-8);">
+      <div class="page-header-reveal" style="margin-bottom: var(--space-8);">
         <h1>Faculty Video Lectures</h1>
         <p class="text-secondary" style="max-width: 65ch;">
           High-definition recorded lectures and laboratory demonstrations delivered by department faculty.
@@ -39,7 +40,7 @@
       </div>
 
       <!-- Featured Video: Unit 1 -->
-      <section class="card" style="margin-bottom: var(--space-12); padding: var(--space-8);">
+      <section class="card reveal-on-scroll" style="margin-bottom: var(--space-12); padding: var(--space-8);">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--space-4); flex-wrap:wrap; gap:var(--space-2);">
           <div class="flex items-center gap-2">
             <span class="badge badge-live">Active Lecture</span>
@@ -76,29 +77,29 @@
       </section>
 
       <!-- Upcoming Units Video Directory -->
-      <section>
+      <section class="reveal-on-scroll">
         <h3 style="margin-bottom: var(--space-4);">Upcoming Units in Video Series</h3>
         <div class="grid gap-4" style="grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));">
           
-          <div class="card">
+          <div class="card reveal-on-scroll" data-stagger-item="1">
             <span class="badge badge-soon" style="margin-bottom:var(--space-2);">Unit 2 &bull; Recording</span>
             <h4>Electrochemical Energy Storage Systems</h4>
             <p class="text-xs text-secondary" style="margin-top:var(--space-2);">Lectures on lithium battery chemistry and solar photovoltaic conversion.</p>
           </div>
 
-          <div class="card">
+          <div class="card reveal-on-scroll" data-stagger-item="2">
             <span class="badge badge-soon" style="margin-bottom:var(--space-2);">Unit 3 &bull; Scheduled</span>
             <h4>Flexible Electronics &amp; Optoelectronic Materials</h4>
             <p class="text-xs text-secondary" style="margin-top:var(--space-2);">Conductive polymer synthesis, OLED displays, and flexible circuits.</p>
           </div>
 
-          <div class="card">
+          <div class="card reveal-on-scroll" data-stagger-item="3">
             <span class="badge badge-soon" style="margin-bottom:var(--space-2);">Unit 4 &bull; Scheduled</span>
             <h4>Nanomaterials, Electrochemistry &amp; Thermal Analysis</h4>
             <p class="text-xs text-secondary" style="margin-top:var(--space-2);">Carbon nanotubes, cyclic voltammetry, and TGA instrumentation.</p>
           </div>
 
-          <div class="card">
+          <div class="card reveal-on-scroll" data-stagger-item="4">
             <span class="badge badge-soon" style="margin-bottom:var(--space-2);">Unit 5 &bull; Scheduled</span>
             <h4>Energy Generation &amp; Sustainable Fuels</h4>
             <p class="text-xs text-secondary" style="margin-top:var(--space-2);">Calorific value determination, bomb calorimeter, and green hydrogen.</p>
@@ -114,6 +115,7 @@
   <footer id="site-footer"></footer>
 
   <!-- Scripts -->
+  <script src="../assets/js/motion.js"></script>
   <script src="../assets/js/main.js"></script>
   <script src="../assets/js/components.js"></script>
   <script src="../assets/js/search.js"></script>

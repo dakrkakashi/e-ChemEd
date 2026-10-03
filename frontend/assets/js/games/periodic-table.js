@@ -333,6 +333,15 @@
 
     const catClass = CAT_CLASS_MAP[el.category] || 'cat-unknown';
 
+    const enVal = parseFloat(el.electronegativity);
+    const enRatio = (!isNaN(enVal) && enVal > 0) ? Math.min(1, enVal / 4.0) : 0;
+    
+    const arVal = parseFloat(el.atomicRadius);
+    const arRatio = (!isNaN(arVal) && arVal > 0) ? Math.min(1, arVal / 300) : 0;
+
+    const ieVal = parseFloat(el.ionizationEnergy);
+    const ieRatio = (!isNaN(ieVal) && ieVal > 0) ? Math.min(1, ieVal / 2500) : 0;
+
     panel.innerHTML = `
       <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:var(--space-4);">
         <span class="badge ${catClass}" style="font-size:11px; padding:3px 10px;">${capitalize(el.category)}</span>
@@ -365,16 +374,19 @@
         <div class="el-fact-box">
           <div class="el-fact-label">Electronegativity</div>
           <div class="el-fact-value">${el.electronegativity !== '—' && el.electronegativity ? el.electronegativity + ' (Pauling)' : '—'}</div>
+          ${enRatio > 0 ? `<div class="ptable-prop-bar"><div class="ptable-prop-fill" style="transform:scaleX(${enRatio.toFixed(3)});"></div></div>` : ''}
         </div>
 
         <div class="el-fact-box">
           <div class="el-fact-label">Atomic Radius</div>
           <div class="el-fact-value">${el.atomicRadius && el.atomicRadius !== '—' ? el.atomicRadius + ' pm' : '—'}</div>
+          ${arRatio > 0 ? `<div class="ptable-prop-bar"><div class="ptable-prop-fill" style="transform:scaleX(${arRatio.toFixed(3)});"></div></div>` : ''}
         </div>
 
         <div class="el-fact-box">
           <div class="el-fact-label">Ionization Energy</div>
           <div class="el-fact-value">${el.ionizationEnergy && el.ionizationEnergy !== '—' ? el.ionizationEnergy + ' kJ/mol' : '—'}</div>
+          ${ieRatio > 0 ? `<div class="ptable-prop-bar"><div class="ptable-prop-fill" style="transform:scaleX(${ieRatio.toFixed(3)});"></div></div>` : ''}
         </div>
 
         <div class="el-fact-box">

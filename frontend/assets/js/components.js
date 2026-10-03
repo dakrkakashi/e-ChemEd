@@ -80,6 +80,10 @@
             <span class="search-shortcut">/</span>
           </button>
 
+          <button type="button" class="btn-icon motion-toggle-btn" id="header-motion-toggle" aria-label="Toggle motion reduction" title="Toggle motion reduction">
+            <span class="motion-icon-slot"></span>
+          </button>
+
           <button type="button" class="btn-icon theme-toggle-btn" id="header-theme-toggle" aria-label="Switch theme mode" title="Switch theme mode">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
           </button>
@@ -109,11 +113,18 @@
             <nav aria-label="Mobile Navigation Links" style="display:flex; flex-direction:column; gap:var(--space-2);">
               ${mobileLinksHtml}
             </nav>
-            <div class="mobile-theme-row" style="padding: var(--space-4) var(--space-4); margin-top: var(--space-4); border-top: 1px solid var(--border-light); display: flex; align-items: center; justify-content: space-between;">
+            <div class="mobile-theme-row" style="padding: var(--space-4) var(--space-4) var(--space-2); margin-top: var(--space-4); border-top: 1px solid var(--border-light); display: flex; align-items: center; justify-content: space-between;">
               <span style="font-size: var(--text-sm); font-weight: 500; color: var(--text-secondary);">Appearance</span>
               <button type="button" class="btn btn-outline theme-toggle-btn" style="min-height: 40px; padding: 0.25rem 0.75rem; font-size: var(--text-xs); display: inline-flex; align-items: center; gap: 0.5rem;" aria-label="Switch theme mode" title="Switch theme mode">
                 <span class="theme-icon-slot"></span>
                 <span class="theme-label-slot">Light Mode</span>
+              </button>
+            </div>
+            <div class="mobile-motion-row" style="padding: var(--space-2) var(--space-4); display: flex; align-items: center; justify-content: space-between;">
+              <span style="font-size: var(--text-sm); font-weight: 500; color: var(--text-secondary);">Motion</span>
+              <button type="button" class="btn btn-outline motion-toggle-btn" style="min-height: 40px; padding: 0.25rem 0.75rem; font-size: var(--text-xs); display: inline-flex; align-items: center; gap: 0.5rem;" aria-label="Toggle motion reduction" title="Toggle motion reduction">
+                <span class="motion-icon-slot"></span>
+                <span class="motion-label-slot">Motion: Normal</span>
               </button>
             </div>
           </div>
@@ -121,10 +132,28 @@
       </div>
     `;
 
-    // Immediately sync theme UI state with active document theme
+    // Immediately sync theme and motion UI state with active document settings
     if (window.updateThemeUI) {
       const activeTheme = document.documentElement.getAttribute('data-theme') || 'light';
       window.updateThemeUI(activeTheme);
+    }
+    if (window.EchemMotion) {
+      const isReduced = window.EchemMotion.isReduced();
+      const buttons = headerEl.querySelectorAll('.motion-toggle-btn');
+      const MOTION_ON_SVG = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M10 8l6 4-6 4V8z"></path></svg>`;
+      const MOTION_OFF_SVG = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><rect x="9" y="8" width="2" height="8"></rect><rect x="13" y="8" width="2" height="8"></rect></svg>`;
+      buttons.forEach(btn => {
+        const iconSlot = btn.querySelector('.motion-icon-slot');
+        if (iconSlot) {
+          iconSlot.innerHTML = isReduced ? MOTION_OFF_SVG : MOTION_ON_SVG;
+        } else {
+          btn.innerHTML = `${isReduced ? MOTION_OFF_SVG : MOTION_ON_SVG} <span class="motion-toggle-badge">${isReduced ? 'OFF' : 'ON'}</span>`;
+        }
+        const labelSlot = btn.querySelector('.motion-label-slot');
+        if (labelSlot) {
+          labelSlot.textContent = isReduced ? 'Motion: Reduced' : 'Motion: Normal';
+        }
+      });
     }
   }
 

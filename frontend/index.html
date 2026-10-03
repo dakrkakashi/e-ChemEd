@@ -19,6 +19,7 @@
   <link rel="stylesheet" href="assets/css/tokens.css">
   <link rel="stylesheet" href="assets/css/base.css">
   <link rel="stylesheet" href="assets/css/components.css">
+  <link rel="stylesheet" href="assets/css/motion.css">
   <link rel="stylesheet" href="assets/css/pages/home.css">
 </head>
 <body>
@@ -35,7 +36,7 @@
         <div class="hero-grid">
           
           <!-- Left Column: Copy & Actions -->
-          <div class="hero-left">
+          <div class="hero-left page-header-reveal">
             <div class="hero-kicker">
               Dept. of Engineering Science &amp; Humanities &middot; FE Syllabus
             </div>
@@ -110,7 +111,7 @@
     <div class="metrics-strip">
       <div class="container">
         <p class="metrics-text">
-          <span>5</span> units &middot; <span>14</span> solved Q&amp;As &middot; <span>118</span> elements &middot; <span>3</span> games
+          <span data-counter-target="5">5</span> units &middot; <span data-counter-target="14">14</span> solved Q&amp;As &middot; <span data-counter-target="118">118</span> elements &middot; <span data-counter-target="3">3</span> games
         </p>
       </div>
     </div>
@@ -123,7 +124,7 @@
 
         <nav class="modules-list" aria-label="Academic Modules Navigation">
           <!-- 01 Mind Maps -->
-          <a href="pages/mind-maps.html" class="module-item" id="module-mindmaps">
+          <a href="pages/mind-maps.html" class="module-item reveal-on-scroll" data-stagger-item="1" id="module-mindmaps">
             <span class="module-index">01</span>
             <div class="module-body">
               <span class="module-title">Mind Maps</span>
@@ -133,7 +134,7 @@
           </a>
 
           <!-- 02 Quizzes -->
-          <a href="pages/quizzes.html" class="module-item" id="module-quizzes">
+          <a href="pages/quizzes.html" class="module-item reveal-on-scroll" data-stagger-item="2" id="module-quizzes">
             <span class="module-index">02</span>
             <div class="module-body">
               <span class="module-title">Quizzes</span>
@@ -143,7 +144,7 @@
           </a>
 
           <!-- 03 Question Bank -->
-          <a href="pages/question-bank.html" class="module-item" id="module-qbank">
+          <a href="pages/question-bank.html" class="module-item reveal-on-scroll" data-stagger-item="3" id="module-qbank">
             <span class="module-index">03</span>
             <div class="module-body">
               <span class="module-title">Question Bank &amp; Numericals</span>
@@ -153,7 +154,7 @@
           </a>
 
           <!-- 04 Video Lectures -->
-          <a href="pages/video-lectures.html" class="module-item" id="module-videos">
+          <a href="pages/video-lectures.html" class="module-item reveal-on-scroll" data-stagger-item="4" id="module-videos">
             <span class="module-index">04</span>
             <div class="module-body">
               <span class="module-title">Video Lectures</span>
@@ -163,7 +164,7 @@
           </a>
 
           <!-- 05 Attendance -->
-          <a href="pages/attendance.html" class="module-item" id="module-attendance">
+          <a href="pages/attendance.html" class="module-item reveal-on-scroll" data-stagger-item="5" id="module-attendance">
             <span class="module-index">05</span>
             <div class="module-body">
               <span class="module-title">Attendance</span>
@@ -173,7 +174,7 @@
           </a>
 
           <!-- 06 Learn with Fun -->
-          <a href="pages/games.html" class="module-item" id="module-games">
+          <a href="pages/games.html" class="module-item reveal-on-scroll" data-stagger-item="6" id="module-games">
             <span class="module-index">06</span>
             <div class="module-body">
               <span class="module-title">Learn with Fun</span>
@@ -192,7 +193,7 @@
         
         <div class="section-divider" id="faculty-heading">Faculty Profile</div>
 
-        <div class="faculty-card" id="faculty-profile-card">
+        <div class="faculty-card reveal-on-scroll" id="faculty-profile-card">
           
           <div class="faculty-photo-col">
             <img src="assets/img/faculty-placeholder.svg" alt="Academic Faculty Placeholder Portrait" class="faculty-photo" width="200" height="200" loading="lazy">
@@ -244,6 +245,7 @@
 
   <!-- Scripts -->
   <script src="assets/js/data-store.js"></script>
+  <script src="assets/js/motion.js"></script>
   <script src="assets/js/main.js"></script>
   <script src="assets/js/components.js"></script>
   <script src="assets/js/search.js"></script>

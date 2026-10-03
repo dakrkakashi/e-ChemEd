@@ -228,6 +228,9 @@
     tapStartCell = null;
     const matched = checkWordMatch();
     if (!matched) {
+      if (window.EchemMotion && window.EchemMotion.shake) {
+        selectedCells.forEach(item => window.EchemMotion.shake(item.el));
+      }
       setTimeout(() => {
         if (!isPointerDragging) {
           clearActiveSelection();
@@ -317,6 +320,10 @@
         showMatchFeedback('Level 2 Complete! All industrial problems correctly resolved. Advance to Level 3!', true);
       }
     } else {
+      if (window.EchemMotion && window.EchemMotion.shake) {
+        window.EchemMotion.shake(selectedProblem.el);
+        window.EchemMotion.shake(el);
+      }
       showMatchFeedback('Incorrect correlation. Review boiler chemistry and try again.', false);
     }
   };
@@ -337,9 +344,22 @@
   let currentEdtaVolume = 0.0;
   const ENDPOINT_VOLUME = 12.0;
 
+  function spawnBuretteDroplet() {
+    if (window.EchemMotion && window.EchemMotion.isReduced()) return;
+    const stage = document.querySelector('.titration-stage');
+    if (!stage) return;
+    const droplet = document.createElement('div');
+    droplet.className = 'burette-droplet';
+    stage.appendChild(droplet);
+    setTimeout(() => {
+      if (droplet.parentNode) droplet.remove();
+    }, 450);
+  }
+
   window.addEdta = function (amount) {
     // Handle float rounding reliably
     currentEdtaVolume = Math.round((currentEdtaVolume + amount) * 10) / 10;
+    spawnBuretteDroplet();
     updateTitrationDisplay();
   };
 
@@ -349,7 +369,10 @@
     const liquid = document.getElementById('flask-liquid');
     if (liquid) {
       liquid.className = 'flask-liquid';
+      liquid.style.height = '65%';
     }
+    const flask = document.querySelector('.conical-flask');
+    if (flask) flask.classList.remove('endpoint-pulse');
     const feedback = document.getElementById('titration-feedback');
     if (feedback) feedback.style.display = 'none';
   };
@@ -360,8 +383,20 @@
 
     const liquid = document.getElementById('flask-liquid');
     const feedback = document.getElementById('titration-feedback');
+    const flask = document.querySelector('.conical-flask');
 
     if (!liquid || !feedback) return;
+
+    // Liquid meniscus rises as EDTA is added
+    const liquidHeight = Math.min(84, 65 + (currentEdtaVolume / 15) * 18);
+    liquid.style.height = `${liquidHeight}%`;
+
+    // Swirl oscillation during addition
+    if (!window.EchemMotion || !window.EchemMotion.isReduced()) {
+      liquid.classList.remove('is-swirling');
+      void liquid.offsetWidth;
+      liquid.classList.add('is-swirling');
+    }
 
     if (currentEdtaVolume === ENDPOINT_VOLUME) {
       // Exact stoichiometric equivalence point: 12.0 mL
@@ -373,6 +408,13 @@
         All Ca<sup>2+</sup> and Mg<sup>2+</sup> cations are sequestered into [M-EDTA]<sup>2-</sup> chelates. 
         Free uncomplexed Eriochrome Black T indicator is released, turning the solution <strong>Steel Blue</strong>!
       `;
+
+      if (flask && (!window.EchemMotion || !window.EchemMotion.isReduced())) {
+        flask.classList.remove('endpoint-pulse');
+        void flask.offsetWidth;
+        flask.classList.add('endpoint-pulse');
+      }
+
       if (window.EchemProgress) window.EchemProgress.markActivity(1, 'gamePlayed');
     } else if (currentEdtaVolume > ENDPOINT_VOLUME) {
       // Over-titrated: solution stays Steel Blue with over-titration warning
@@ -397,11 +439,15 @@
      LEVEL 4: Boiler Emergency Escape Room
      ========================================================================== */
   window.checkEscapeRoom = function () {
-    const s1 = document.getElementById('s1')?.value;
-    const s2 = document.getElementById('s2')?.value;
+    const s1El = document.getElementById('s1');
+    const s2El = document.getElementById('s2');
+    const s1 = s1El?.value;
+    const s2 = s2El?.value;
     const feedback = document.getElementById('escape-feedback');
 
     if (!s1 || !s2) {
+      if (s1El && !s1 && window.EchemMotion) window.EchemMotion.shake(s1El);
+      if (s2El && !s2 && window.EchemMotion) window.EchemMotion.shake(s2El);
       if (feedback) {
         feedback.style.display = 'block';
         feedback.style.color = '#e11d48';
@@ -415,7 +461,7 @@
         feedback.style.display = 'block';
         feedback.style.color = '#047857';
         feedback.innerHTML = `
-          <div style="background:rgba(16,185,129,0.15); border:1.5px solid #10b981; border-radius:var(--radius-lg); padding:var(--space-4); margin-top:var(--space-4);">
+          <div class="boiler-door-reveal" style="background:rgba(16,185,129,0.15); border:1.5px solid #10b981; border-radius:var(--radius-lg); padding:var(--space-4); margin-top:var(--space-4);">
             <h4 style="color:#047857; margin-bottom:var(--space-2); font-size:var(--text-lg);">&check; Boiler Plant Saved! Challenge Mastered</h4>
             <p class="text-sm" style="margin-bottom:var(--space-3);">
               You resolved the CaSO<sub>4</sub> scale using Calgon conditioning and mitigated caustic embrittlement using NaNO<sub>3</sub> / tannin inhibitors!
@@ -426,6 +472,8 @@
       }
       if (window.EchemProgress) window.EchemProgress.markActivity(1, 'gamePlayed');
     } else {
+      if (s1El && s1 !== 'correct' && window.EchemMotion) window.EchemMotion.shake(s1El);
+      if (s2El && s2 !== 'correct' && window.EchemMotion) window.EchemMotion.shake(s2El);
       if (feedback) {
         feedback.style.display = 'block';
         feedback.style.color = '#e11d48';

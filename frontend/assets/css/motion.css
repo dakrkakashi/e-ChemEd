@@ -1,0 +1,479 @@
+/**
+ * e-chemEd Considered Motion System CSS
+ * "A well-made printed textbook coming to life"
+ * 
+ * Strict Guidelines:
+ * - Only transform, opacity, clip-path, SVG stroke-dashoffset
+ * - Zero layout shifts (CLS < 0.1)
+ * - Zero third-party animation dependencies
+ * - Fully accessible & graceful degradation when JS is disabled
+ */
+
+/* ==========================================================================
+   1. Cross-Document View Transitions
+   ========================================================================== */
+@view-transition {
+  navigation: auto;
+}
+
+#site-header {
+  view-transition-name: site-header;
+}
+
+::view-transition-old(root) {
+  animation: 200ms var(--ease-out) both vt-fade-out;
+}
+
+::view-transition-new(root) {
+  animation: 200ms var(--ease-out) both vt-fade-in;
+}
+
+@keyframes vt-fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes vt-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ==========================================================================
+   2. Page-Load Reveals & Scroll-Driven Entrances
+   ========================================================================== */
+/* When JS is not loaded, all elements remain visible without animation */
+.js-motion-ready .page-header-reveal {
+  animation: pageHeaderRise var(--dur-base) var(--ease-out) both;
+}
+
+@keyframes pageHeaderRise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Mini Periodic Tiles entrance & calm sequential flip */
+.js-motion-ready .hero-ptable-mini .mini-tile {
+  animation: miniTileSettle var(--dur-slow) var(--ease-out) both;
+}
+
+.js-motion-ready .hero-ptable-mini .mini-tile:nth-child(1) { animation-delay: calc(var(--dur-fast) + var(--stagger) * 0); }
+.js-motion-ready .hero-ptable-mini .mini-tile:nth-child(2) { animation-delay: calc(var(--dur-fast) + var(--stagger) * 1); }
+.js-motion-ready .hero-ptable-mini .mini-tile:nth-child(3) { animation-delay: calc(var(--dur-fast) + var(--stagger) * 2); }
+.js-motion-ready .hero-ptable-mini .mini-tile:nth-child(4) { animation-delay: calc(var(--dur-fast) + var(--stagger) * 3); }
+.js-motion-ready .hero-ptable-mini .mini-tile:nth-child(5) { animation-delay: calc(var(--dur-fast) + var(--stagger) * 4); }
+.js-motion-ready .hero-ptable-mini .mini-tile:nth-child(6) { animation-delay: calc(var(--dur-fast) + var(--stagger) * 5); }
+
+@keyframes miniTileSettle {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.mini-tile.is-flipping {
+  animation: tileFlipSequence var(--dur-story) var(--ease-in-out) both;
+  will-change: transform;
+}
+
+@keyframes tileFlipSequence {
+  0% { transform: perspective(400px) rotateY(0deg); }
+  50% { transform: perspective(400px) rotateY(180deg); }
+  100% { transform: perspective(400px) rotateY(0deg); }
+}
+
+/* Scroll reveals - visible by default, only hidden & animated when JS confirms ready */
+.js-motion-ready .reveal-on-scroll:not(.is-revealed) {
+  opacity: 0;
+  transform: translateY(12px);
+  will-change: opacity, transform;
+}
+
+.js-motion-ready .reveal-on-scroll.is-revealed {
+  opacity: 1;
+  transform: translateY(0);
+  transition: 
+    opacity calc(var(--dur-base) * var(--motion-scale)) var(--ease-out),
+    transform calc(var(--dur-base) * var(--motion-scale)) var(--ease-out);
+}
+
+/* Stagger utilities for collections (up to 8 items) */
+.js-motion-ready [data-stagger-item="1"] { transition-delay: calc(var(--stagger) * 1 * var(--motion-scale)); }
+.js-motion-ready [data-stagger-item="2"] { transition-delay: calc(var(--stagger) * 2 * var(--motion-scale)); }
+.js-motion-ready [data-stagger-item="3"] { transition-delay: calc(var(--stagger) * 3 * var(--motion-scale)); }
+.js-motion-ready [data-stagger-item="4"] { transition-delay: calc(var(--stagger) * 4 * var(--motion-scale)); }
+.js-motion-ready [data-stagger-item="5"] { transition-delay: calc(var(--stagger) * 5 * var(--motion-scale)); }
+.js-motion-ready [data-stagger-item="6"] { transition-delay: calc(var(--stagger) * 6 * var(--motion-scale)); }
+.js-motion-ready [data-stagger-item="7"] { transition-delay: calc(var(--stagger) * 7 * var(--motion-scale)); }
+.js-motion-ready [data-stagger-item="8"] { transition-delay: calc(var(--stagger) * 8 * var(--motion-scale)); }
+
+/* ==========================================================================
+   3. Interactive Micro-Interactions (Textbook tactile feel)
+   ========================================================================== */
+/* Tactile button press */
+.btn {
+  transition: 
+    transform calc(var(--dur-instant) * var(--motion-scale)) var(--ease-out),
+    background-color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out);
+}
+
+.btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+/* Hover nudge on icon arrows */
+.btn svg,
+.nav-link svg,
+.module-row-arrow,
+.unit-card-arrow,
+.drawer-close-btn svg {
+  transition: transform calc(var(--dur-fast) * var(--motion-scale)) var(--ease-out);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .btn:hover svg.arrow-icon,
+  .unit-card:hover .unit-card-arrow,
+  .module-list-row:hover .module-row-arrow {
+    transform: translateX(2px);
+  }
+}
+
+/* Nav links: Editorial ink hairline underline */
+.nav-link {
+  position: relative;
+  text-decoration: none !important;
+}
+
+.nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: 6px;
+  left: var(--space-3);
+  right: var(--space-3);
+  height: 1.5px;
+  background-color: var(--brand-primary);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform calc(var(--dur-fast) * var(--motion-scale)) var(--ease-out);
+  pointer-events: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .nav-link:hover::after {
+    transform: scaleX(1);
+  }
+}
+
+.nav-link.active::after {
+  transform: scaleX(1);
+}
+
+/* ==========================================================================
+   4. Overlays, Modals & Mobile Drawer
+   ========================================================================== */
+/* Mobile Drawer transitions */
+.drawer-backdrop {
+  display: block !important;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity calc(var(--dur-base) * var(--motion-scale)) var(--ease-out);
+}
+
+.drawer-backdrop.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.mobile-nav-drawer {
+  transform: translateX(100%);
+  transition: transform calc(var(--dur-base) * var(--motion-scale)) var(--ease-out);
+  will-change: transform;
+}
+
+.drawer-backdrop.open .mobile-nav-drawer {
+  transform: translateX(0);
+}
+
+/* Desktop & Search Modals */
+.modal-backdrop {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity calc(var(--dur-base) * var(--motion-scale)) var(--ease-out);
+}
+
+.modal-backdrop.open {
+  display: flex !important;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal-backdrop .modal {
+  transform: scale(0.97) translateY(8px);
+  opacity: 0;
+  transition: 
+    transform calc(var(--dur-base) * var(--motion-scale)) var(--ease-out),
+    opacity calc(var(--dur-base) * var(--motion-scale)) var(--ease-out);
+  will-change: transform, opacity;
+}
+
+.modal-backdrop.open .modal {
+  transform: scale(1) translateY(0);
+  opacity: 1;
+}
+
+/* Mobile bottom-sheet mode for modals on small viewports */
+@media (max-width: 640px) {
+  .modal-backdrop.modal-bottom-sheet .modal {
+    transform: translateY(100%);
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+  .modal-backdrop.modal-bottom-sheet.open .modal {
+    transform: translateY(0);
+  }
+}
+
+/* ==========================================================================
+   5. Accordions, Tabs & Disclosures
+   ========================================================================== */
+/* Smooth grid accordion */
+.accordion-item {
+  border-bottom: 1px solid var(--border-light);
+}
+
+.accordion-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  cursor: pointer;
+}
+
+.accordion-chevron,
+.accordion-header svg {
+  transition: transform calc(var(--dur-fast) * var(--motion-scale)) var(--ease-out);
+}
+
+.accordion-item[open] .accordion-chevron,
+.accordion-item.open .accordion-chevron,
+[aria-expanded="true"] .accordion-chevron,
+[aria-expanded="true"] > svg.accordion-icon {
+  transform: rotate(180deg);
+}
+
+/* Question Bank & Worked Numerical Solutions */
+.answer-highlight {
+  position: relative;
+}
+
+.answer-highlight::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: currentColor;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform calc(var(--dur-slow) * var(--motion-scale)) var(--ease-out);
+}
+
+.qa-card.open .answer-highlight::after {
+  transform: scaleX(1);
+}
+
+.step-item {
+  transition: transform calc(var(--dur-fast) * var(--motion-scale)) var(--ease-out),
+              border-color var(--dur-fast) var(--ease-out);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .step-item:hover {
+    transform: translateX(2px);
+    border-color: var(--brand-primary);
+  }
+}
+
+/* Accordion body animation via grid-template-rows */
+.accordion-collapse {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows calc(var(--dur-slow) * var(--motion-scale)) var(--ease-in-out);
+}
+
+.accordion-collapse.open,
+.accordion-item[open] > .accordion-collapse,
+.accordion-item.is-open > .accordion-collapse {
+  grid-template-rows: 1fr;
+}
+
+.accordion-content {
+  overflow: hidden;
+  opacity: 0;
+  transition: opacity calc(var(--dur-slow) * var(--motion-scale)) var(--ease-out);
+}
+
+.accordion-collapse.open .accordion-content,
+.accordion-item[open] > .accordion-collapse .accordion-content,
+.accordion-item.is-open > .accordion-collapse .accordion-content {
+  opacity: 1;
+}
+
+/* Tabs: Underline indicator & cross-fade panel */
+.tab-btn {
+  position: relative;
+  transition: color var(--dur-fast) var(--ease-out);
+}
+
+.tab-panel,
+.tab-content {
+  opacity: 0;
+  transition: opacity calc(var(--dur-fast) * var(--motion-scale)) var(--ease-out);
+}
+
+.tab-panel.active,
+.tab-content.active {
+  opacity: 1;
+}
+
+/* ==========================================================================
+   6. Feedback, Toasts & Validation
+   ========================================================================== */
+/* Notification Toasts */
+.motion-toast {
+  position: fixed;
+  bottom: max(var(--space-4), var(--safe-bottom));
+  right: var(--space-4);
+  max-width: 380px;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  padding: var(--space-3) var(--space-4);
+  z-index: 200;
+  transform: translateY(12px);
+  opacity: 0;
+  transition: 
+    transform calc(var(--dur-fast) * var(--motion-scale)) var(--ease-out),
+    opacity calc(var(--dur-fast) * var(--motion-scale)) var(--ease-out);
+  pointer-events: none;
+}
+
+.motion-toast.show {
+  transform: translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Input validation error shake (≤ 200ms, WCAG compliant) */
+.motion-shake,
+.field-error-shake {
+  animation: motionShake 200ms var(--ease-in-out) 1;
+}
+
+@keyframes motionShake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-6px); }
+  50% { transform: translateX(5px); }
+  75% { transform: translateX(-4px); }
+}
+
+/* SVG Checkmark Draw-In */
+.svg-draw-check {
+  stroke-dasharray: 40;
+  stroke-dashoffset: 40;
+  animation: svgDrawCheck calc(var(--dur-base) * var(--motion-scale)) var(--ease-out) forwards;
+}
+
+@keyframes svgDrawCheck {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* ==========================================================================
+   7. Skeleton Shimmer Loading (Auto-stops at 3s)
+   ========================================================================== */
+.skeleton-loading {
+  position: relative;
+  overflow: hidden;
+  background-color: var(--ink-100);
+}
+
+[data-theme="dark"] .skeleton-loading {
+  background-color: var(--bg-muted);
+}
+
+.skeleton-loading::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.35) 50%,
+    transparent 100%
+  );
+  transform: translateX(-100%);
+  animation: skeletonShimmer 1.5s infinite;
+}
+
+[data-theme="dark"] .skeleton-loading::after {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.08) 50%,
+    transparent 100%
+  );
+}
+
+@keyframes skeletonShimmer {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+/* ==========================================================================
+   8. Motion System Toggle Button in Header
+   ========================================================================== */
+.motion-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.motion-toggle-badge {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1;
+  position: absolute;
+  bottom: 4px;
+  right: 4px;
+  background-color: var(--brand-primary);
+  color: var(--brand-primary-text);
+  padding: 1px 3px;
+  border-radius: 3px;
+  opacity: 0.9;
+}
+
+[data-motion="reduced"] .motion-toggle-badge {
+  background-color: var(--ink-600);
+}

@@ -55,3 +55,7 @@ ehthumbs.db
 $RECYCLE.BIN/
 *.bak
 *.tmp
+
+# Vercel deployment cache and secrets
+.vercel/
+frontend/.vercel/

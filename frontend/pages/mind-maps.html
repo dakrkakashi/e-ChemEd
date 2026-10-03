@@ -12,6 +12,7 @@
   <link rel="stylesheet" href="../assets/css/tokens.css">
   <link rel="stylesheet" href="../assets/css/base.css">
   <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/motion.css">
 </head>
 <body>
 
@@ -30,7 +31,7 @@
       </nav>
 
       <!-- Page Header -->
-      <div style="margin-bottom: var(--space-8);">
+      <div class="page-header-reveal" style="margin-bottom: var(--space-8);">
         <h1>Unit-wise Mind Maps</h1>
         <p class="text-secondary" style="max-width: 65ch;">
           High-yield visual summaries connecting chemical reactions, mechanisms, industrial applications, 
@@ -52,6 +53,7 @@
 
   <!-- Scripts -->
   <script src="../assets/js/data-store.js"></script>
+  <script src="../assets/js/motion.js"></script>
   <script src="../assets/js/main.js"></script>
   <script src="../assets/js/components.js"></script>
   <script src="../assets/js/search.js"></script>
@@ -64,10 +66,10 @@
         const units = await loader('../data/units.json');
         const grid = document.getElementById('mindmaps-grid');
 
-        grid.innerHTML = units.map(unit => {
+        grid.innerHTML = units.map((unit, idx) => {
           if (unit.status === 'live') {
             return `
-              <div class="card" style="border-top: 4px solid var(--unit-${unit.unitNumber}); display:flex; flex-direction:column; justify-content:space-between;">
+              <div class="card reveal-on-scroll" data-stagger-item="${idx + 1}" style="border-top: 4px solid var(--unit-${unit.unitNumber}); display:flex; flex-direction:column; justify-content:space-between;">
                 <div>
                   <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--space-3);">
                     <span class="badge badge-live">Available Now</span>
@@ -90,7 +92,7 @@
             `;
           } else {
             return `
-              <div class="card" style="border-top: 4px solid var(--border-medium); display:flex; flex-direction:column; justify-content:space-between;">
+              <div class="card reveal-on-scroll" data-stagger-item="${idx + 1}" style="border-top: 4px solid var(--border-medium); display:flex; flex-direction:column; justify-content:space-between;">
                 <div>
                   <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--space-3);">
                     <span class="badge badge-soon">Coming Soon</span>
@@ -109,6 +111,10 @@
             `;
           }
         }).join('');
+
+        if (window.EchemMotion && window.EchemMotion.refresh) {
+          window.EchemMotion.refresh();
+        }
       } catch (err) {
         console.error('Error rendering mind maps:', err);
       }

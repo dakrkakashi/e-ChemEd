@@ -118,6 +118,18 @@
   --transition-normal: 200ms ease;
   --transition-slow: 300ms ease;
 
+  /* --- Considered Motion Tokens --- */
+  --dur-instant: 80ms;
+  --dur-fast: 150ms;
+  --dur-base: 250ms;
+  --dur-slow: 400ms;
+  --dur-story: 700ms;
+  --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-linear: linear;
+  --stagger: 60ms;
+  --motion-scale: 1;
+
   /* --- Max Layout Width --- */
   --container-max: 1200px;
   --container-narrow: 840px;
@@ -232,12 +244,52 @@
   --unit-5-border: rgba(222, 109, 136, 0.35);
 }
 
-/* Reduced motion preference */
+/* --- Reduced Motion System & User Preferences --- */
+[data-motion="reduced"] {
+  --motion-scale: 0;
+  --dur-instant: 0.01ms;
+  --dur-fast: 0.01ms;
+  --dur-base: 0.01ms;
+  --dur-slow: 0.01ms;
+  --dur-story: 0.01ms;
+  --stagger: 0ms;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  *, ::before, ::after {
+  :root:not([data-motion="full"]) {
+    --motion-scale: 0;
+    --dur-instant: 0.01ms;
+    --dur-fast: 0.01ms;
+    --dur-base: 0.01ms;
+    --dur-slow: 0.01ms;
+    --dur-story: 0.01ms;
+    --stagger: 0ms;
+  }
+}
+
+[data-motion="reduced"] *,
+[data-motion="reduced"] ::before,
+[data-motion="reduced"] ::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root:not([data-motion="full"]) *,
+  :root:not([data-motion="full"]) ::before,
+  :root:not([data-motion="full"]) ::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+}
+
+@media print {
+  *, ::before, ::after {
+    animation: none !important;
+    transition: none !important;
   }
 }

@@ -12,6 +12,7 @@
   <link rel="stylesheet" href="../assets/css/tokens.css">
   <link rel="stylesheet" href="../assets/css/base.css">
   <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/motion.css">
   <link rel="stylesheet" href="../assets/css/pages/unit.css">
   
   <style>
@@ -57,7 +58,7 @@
       </nav>
 
       <!-- Page Header -->
-      <div style="margin-bottom: var(--space-8);">
+      <div class="page-header-reveal" style="margin-bottom: var(--space-8);">
         <h1>Engineering Chemistry Quizzes</h1>
         <p class="text-secondary" style="max-width: 65ch;">
           Unit-wise evaluation quizzes designed to assess your conceptual understanding, EDTA calculations, 
@@ -104,6 +105,7 @@
 
   <!-- Scripts -->
   <script src="../assets/js/data-store.js"></script>
+  <script src="../assets/js/motion.js"></script>
   <script src="../assets/js/main.js"></script>
   <script src="../assets/js/components.js"></script>
   <script src="../assets/js/search.js"></script>
@@ -120,12 +122,13 @@
 
         const container = document.getElementById('quizzes-container');
         
-        container.innerHTML = units.map(unit => {
+        container.innerHTML = units.map((unit, idx) => {
           const isLive = unit.status === 'live';
+          const staggerIdx = (idx % 8) + 1;
           
           if (isLive) {
             return `
-              <div class="card" style="border-top: 4px solid var(--unit-${unit.unitNumber}); display:flex; flex-direction:column; justify-content:space-between;">
+              <div class="card reveal-on-scroll" data-stagger-item="${staggerIdx}" style="border-top: 4px solid var(--unit-${unit.unitNumber}); display:flex; flex-direction:column; justify-content:space-between;">
                 <div>
                   <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--space-3);">
                     <span class="badge badge-live">Live Quizzes</span>
@@ -163,7 +166,7 @@
             `;
           } else {
             return `
-              <div class="card" style="border-top: 4px solid var(--border-medium); display:flex; flex-direction:column; justify-content:space-between;">
+              <div class="card reveal-on-scroll" data-stagger-item="${staggerIdx}" style="border-top: 4px solid var(--border-medium); display:flex; flex-direction:column; justify-content:space-between;">
                 <div>
                   <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--space-3);">
                     <span class="badge badge-soon">Coming Soon</span>
@@ -187,7 +190,14 @@
             `;
           }
         }).join('');
+
+        if (window.EchemMotion && window.EchemMotion.refresh) {
+          window.EchemMotion.refresh();
+        }
       } catch (err) {
+        console.error('Error rendering quizzes dashboard:', err);
+      }
+    })();
         console.error('Error rendering quizzes dashboard:', err);
       }
     })();
