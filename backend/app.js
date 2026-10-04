@@ -88,10 +88,26 @@ const corsOptions = {
   },
   credentials: true,
   methods: ['GET', 'POST', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'x-admin-key', 'x-session-code', 'Authorization', 'x-session-token']
+  allowedHeaders: ['Content-Type', 'x-admin-key', 'x-session-code', 'Authorization', 'x-session-token'],
+  exposedHeaders: ['Server-Timing']
 };
 
 app.use(compression());
+
+// High-resolution request timing & latency observability
+app.use((req, res, next) => {
+  const start = process.hrtime.bigint();
+  const originalEnd = res.end;
+  res.end = function (...args) {
+    const durationMs = Number(process.hrtime.bigint() - start) / 1e6;
+    if (!res.headersSent) {
+      res.setHeader('Server-Timing', `app;dur=${durationMs.toFixed(2)}`);
+    }
+    return originalEnd.apply(this, args);
+  };
+  next();
+});
+
 app.use(cors(corsOptions));
 
 // JSON Body Parser with malformed JSON protection

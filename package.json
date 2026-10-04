@@ -16,7 +16,8 @@
     "test:serverless": "node scripts/test-serverless-export.js",
     "migrate:postgres": "node scripts/init-postgres.js",
     "purge": "node backend/scripts/purge.js",
-    "lint": "stylelint \"frontend/assets/css/**/*.css\""
+    "lint": "stylelint \"frontend/assets/css/**/*.css\"",
+    "test:perf": "node scripts/test-performance.js"
   },
   "devDependencies": {
     "axe-core": "^4.13.0",

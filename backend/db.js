@@ -176,6 +176,12 @@ async function ensurePgSchema() {
         completed_at TEXT NOT NULL,
         CONSTRAINT unique_user_unit_activity UNIQUE (user_id, unit_id, activity_key)
       );
+
+      CREATE INDEX IF NOT EXISTS idx_attendance_date_div ON attendance(date, division);
+      CREATE INDEX IF NOT EXISTS idx_attendance_prn ON attendance(prn);
+      CREATE INDEX IF NOT EXISTS idx_sessions_user_id ON sessions(user_id);
+      CREATE INDEX IF NOT EXISTS idx_sessions_expires_at ON sessions(expires_at);
+      CREATE INDEX IF NOT EXISTS idx_user_progress_user_id ON user_progress(user_id);
     `);
 
     // Seed default accounts if empty
@@ -306,6 +312,12 @@ if (!isPostgres) {
           completed_at TEXT NOT NULL,
           CONSTRAINT unique_user_unit_activity UNIQUE (user_id, unit_id, activity_key)
         );
+
+        CREATE INDEX IF NOT EXISTS idx_attendance_date_div ON attendance(date, division);
+        CREATE INDEX IF NOT EXISTS idx_attendance_prn ON attendance(prn);
+        CREATE INDEX IF NOT EXISTS idx_sessions_user_id ON sessions(user_id);
+        CREATE INDEX IF NOT EXISTS idx_sessions_expires_at ON sessions(expires_at);
+        CREATE INDEX IF NOT EXISTS idx_user_progress_user_id ON user_progress(user_id);
       `);
 
       seedDefaultUsers();
