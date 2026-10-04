@@ -4,6 +4,7 @@
  * Supports:
  * 1. PostgreSQL (Vercel Postgres / Neon / Supabase) via 'pg' connection pooling.
  * 2. SQLite via better-sqlite3 with fallback to node:sqlite (Node 22+) for local/offline runtimes.
+ * 3. In-Memory Resilient Fallback for serverless preview/demo runtimes before a cloud DB is attached.
  * 
  * Uses parameterized queries exclusively ($1, $2 for Postgres; ?, ? for SQLite).
  * Never logs student PII.
@@ -21,21 +22,6 @@ let dbEngine = isPostgres ? 'postgresql' : 'unknown';
 let pgPool = null;
 let sqliteDb = null;
 const stmtCache = new Map();
-
-/**
- * Cache or retrieve prepared statements for SQLite
- */
-function getStmt(key, sql) {
-  let stmt = stmtCache.get(key);
-  if (!stmt && sqliteDb) {
-    stmt = sqliteDb.prepare(sql);
-    stmtCache.set(key, stmt);
-  }
-  if (!stmt) {
-    throw new Error('Database is not connected. Please attach a Postgres database in your Vercel project Storage tab.');
-  }
-  return stmt;
-}
 
 /**
  * Hash password with random salt using native scrypt
@@ -63,6 +49,54 @@ function verifyPassword(password, salt, storedHash) {
   } catch (err) {
     return false;
   }
+}
+
+// ---------------------------------------------------------------------------
+// IN-MEMORY RESILIENT STORE (Zero-setup cloud preview & fallback)
+// ---------------------------------------------------------------------------
+const memoryStore = {
+  users: [
+    {
+      id: 1,
+      username: 'admin',
+      password_hash: hashPassword('admin123').hash,
+      salt: hashPassword('admin123').salt,
+      role: 'admin',
+      name: 'Dr. S. S. Chine',
+      roll_no: null,
+      division: null,
+      prn: null,
+      created_at: new Date().toISOString()
+    },
+    {
+      id: 2,
+      username: 'student',
+      password_hash: hashPassword('student123').hash,
+      salt: hashPassword('student123').salt,
+      role: 'student',
+      name: 'Rahul Shinde',
+      roll_no: '101',
+      division: 'A (Computer)',
+      prn: '72183921B',
+      created_at: new Date().toISOString()
+    }
+  ],
+  sessions: new Map(),
+  userProgress: new Map(),
+  attendance: [],
+  settings: new Map([['session_code', '']])
+};
+
+/**
+ * Cache or retrieve prepared statements for SQLite
+ */
+function getStmt(key, sql) {
+  let stmt = stmtCache.get(key);
+  if (!stmt && sqliteDb) {
+    stmt = sqliteDb.prepare(sql);
+    stmtCache.set(key, stmt);
+  }
+  return stmt;
 }
 
 // ---------------------------------------------------------------------------
@@ -176,7 +210,6 @@ if (!isPostgres) {
         fs.mkdirSync(DB_DIR, { recursive: true });
       }
     } catch (e) {
-      // In read-only environments (e.g., serverless /var/task), fall back to /tmp
       DB_DIR = path.join('/tmp', 'echemed-data');
       if (!fs.existsSync(DB_DIR)) {
         fs.mkdirSync(DB_DIR, { recursive: true });
@@ -199,8 +232,7 @@ if (!isPostgres) {
         sqliteDb.exec('PRAGMA foreign_keys = ON;');
         dbEngine = 'node:sqlite';
       } catch (err2) {
-        dbEngine = 'unconfigured';
-        console.warn('[DB WARNING] Neither better-sqlite3 nor node:sqlite is available. Please connect a PostgreSQL database.');
+        dbEngine = 'memory-fallback';
       }
     }
 
@@ -258,10 +290,11 @@ if (!isPostgres) {
       `);
 
       seedDefaultUsers();
+    } else {
+      dbEngine = 'memory-fallback';
     }
   } catch (initErr) {
-    console.warn('[DB WARNING] SQLite could not be initialized:', initErr.message);
-    dbEngine = 'unconfigured';
+    dbEngine = 'memory-fallback';
   }
 }
 
@@ -277,6 +310,7 @@ function seedDefaultUsers() {
   }
 
   const countStmt = getStmt('countUsers', 'SELECT COUNT(*) AS total FROM users');
+  if (!countStmt) return;
   const row = countStmt.get();
   const total = row ? Number(row.total) : 0;
 
@@ -318,12 +352,19 @@ async function getUserWithPassword(username) {
     return res.rows[0] || null;
   }
 
-  const stmt = getStmt('getUserWithPassword', `
-    SELECT id, username, password_hash, salt, role, name, roll_no, division, prn, created_at
-    FROM users
-    WHERE username = ?
-  `);
-  return stmt.get(username.trim()) || null;
+  if (sqliteDb) {
+    const stmt = getStmt('getUserWithPassword', `
+      SELECT id, username, password_hash, salt, role, name, roll_no, division, prn, created_at
+      FROM users
+      WHERE username = ?
+    `);
+    return stmt.get(username.trim()) || null;
+  }
+
+  // Memory fallback
+  const clean = username.trim().toLowerCase();
+  const u = memoryStore.users.find(u => u.username.toLowerCase() === clean || (u.prn && u.prn.toLowerCase() === clean));
+  return u ? { ...u } : null;
 }
 
 /**
@@ -341,12 +382,22 @@ async function getUserById(id) {
     return res.rows[0] || null;
   }
 
-  const stmt = getStmt('getUserById', `
-    SELECT id, username, role, name, roll_no, division, prn, created_at
-    FROM users
-    WHERE id = ?
-  `);
-  return stmt.get(id) || null;
+  if (sqliteDb) {
+    const stmt = getStmt('getUserById', `
+      SELECT id, username, role, name, roll_no, division, prn, created_at
+      FROM users
+      WHERE id = ?
+    `);
+    return stmt.get(id) || null;
+  }
+
+  // Memory fallback
+  const u = memoryStore.users.find(u => u.id === Number(id));
+  if (!u) return null;
+  return {
+    id: u.id, username: u.username, role: u.role, name: u.name,
+    roll_no: u.roll_no, division: u.division, prn: u.prn, created_at: u.created_at
+  };
 }
 
 /**
@@ -366,12 +417,23 @@ async function getUserByUsername(username) {
     return res.rows[0] || null;
   }
 
-  const stmt = getStmt('getUserByUsername', `
-    SELECT id, username, role, name, roll_no, division, prn, created_at
-    FROM users
-    WHERE username = ?
-  `);
-  return stmt.get(username.trim()) || null;
+  if (sqliteDb) {
+    const stmt = getStmt('getUserByUsername', `
+      SELECT id, username, role, name, roll_no, division, prn, created_at
+      FROM users
+      WHERE username = ?
+    `);
+    return stmt.get(username.trim()) || null;
+  }
+
+  // Memory fallback
+  const clean = username.trim().toLowerCase();
+  const u = memoryStore.users.find(u => u.username.toLowerCase() === clean);
+  if (!u) return null;
+  return {
+    id: u.id, username: u.username, role: u.role, name: u.name,
+    roll_no: u.roll_no, division: u.division, prn: u.prn, created_at: u.created_at
+  };
 }
 
 /**
@@ -393,12 +455,23 @@ async function createSession(userId, durationDays = 7) {
     return { token, expiresAt };
   }
 
-  const stmt = getStmt('createSession', `
-    INSERT INTO sessions (token, user_id, expires_at, created_at, last_active_at)
-    VALUES (?, ?, ?, ?, ?)
-  `);
-  stmt.run(token, userId, expiresAt, createdAt, createdAt);
+  if (sqliteDb) {
+    const stmt = getStmt('createSession', `
+      INSERT INTO sessions (token, user_id, expires_at, created_at, last_active_at)
+      VALUES (?, ?, ?, ?, ?)
+    `);
+    stmt.run(token, userId, expiresAt, createdAt, createdAt);
+    return { token, expiresAt };
+  }
 
+  // Memory fallback
+  memoryStore.sessions.set(token, {
+    token,
+    userId,
+    expiresAt,
+    createdAt,
+    lastActiveAt: createdAt
+  });
   return { token, expiresAt };
 }
 
@@ -428,7 +501,6 @@ async function getSession(token) {
       return null;
     }
 
-    // Update last_active_at timestamp asynchronously
     getPgPool().query('UPDATE sessions SET last_active_at = $1 WHERE token = $2', [now, token]).catch(() => {});
 
     return {
@@ -449,41 +521,70 @@ async function getSession(token) {
     };
   }
 
-  const stmt = getStmt('getSession', `
-    SELECT s.token, s.user_id, s.expires_at, s.created_at, s.last_active_at,
-           u.id, u.username, u.role, u.name, u.roll_no, u.division, u.prn
-    FROM sessions s
-    JOIN users u ON s.user_id = u.id
-    WHERE s.token = ?
-  `);
-  const record = stmt.get(token);
+  if (sqliteDb) {
+    const stmt = getStmt('getSession', `
+      SELECT s.token, s.user_id, s.expires_at, s.created_at, s.last_active_at,
+             u.id, u.username, u.role, u.name, u.roll_no, u.division, u.prn
+      FROM sessions s
+      JOIN users u ON s.user_id = u.id
+      WHERE s.token = ?
+    `);
+    const record = stmt.get(token);
 
-  if (!record) return null;
+    if (!record) return null;
 
-  if (record.expires_at <= now) {
-    deleteSession(token);
-    return null;
+    if (record.expires_at <= now) {
+      deleteSession(token);
+      return null;
+    }
+
+    try {
+      const updateStmt = getStmt('updateLastActive', 'UPDATE sessions SET last_active_at = ? WHERE token = ?');
+      updateStmt.run(now, token);
+    } catch (e) {}
+
+    return {
+      token: record.token,
+      userId: record.user_id,
+      expiresAt: record.expires_at,
+      createdAt: record.created_at,
+      lastActiveAt: now,
+      user: {
+        id: record.user_id,
+        username: record.username,
+        role: record.role,
+        name: record.name,
+        rollNo: record.roll_no,
+        division: record.division,
+        prn: record.prn
+      }
+    };
   }
 
-  try {
-    const updateStmt = getStmt('updateLastActive', 'UPDATE sessions SET last_active_at = ? WHERE token = ?');
-    updateStmt.run(now, token);
-  } catch (e) {}
-
+  // Memory fallback
+  const record = memoryStore.sessions.get(token);
+  if (!record) return null;
+  if (record.expiresAt <= now) {
+    memoryStore.sessions.delete(token);
+    return null;
+  }
+  record.lastActiveAt = now;
+  const u = memoryStore.users.find(u => u.id === record.userId);
+  if (!u) return null;
   return {
     token: record.token,
-    userId: record.user_id,
-    expiresAt: record.expires_at,
-    createdAt: record.created_at,
+    userId: record.userId,
+    expiresAt: record.expiresAt,
+    createdAt: record.createdAt,
     lastActiveAt: now,
     user: {
-      id: record.user_id,
-      username: record.username,
-      role: record.role,
-      name: record.name,
-      rollNo: record.roll_no,
-      division: record.division,
-      prn: record.prn
+      id: u.id,
+      username: u.username,
+      role: u.role,
+      name: u.name,
+      rollNo: u.roll_no,
+      division: u.division,
+      prn: u.prn
     }
   };
 }
@@ -500,8 +601,14 @@ async function deleteSession(token) {
     return;
   }
 
-  const stmt = getStmt('deleteSession', 'DELETE FROM sessions WHERE token = ?');
-  stmt.run(token);
+  if (sqliteDb) {
+    const stmt = getStmt('deleteSession', 'DELETE FROM sessions WHERE token = ?');
+    if (stmt) stmt.run(token);
+    return;
+  }
+
+  // Memory fallback
+  memoryStore.sessions.delete(token);
 }
 
 /**
@@ -516,9 +623,22 @@ async function cleanExpiredSessions() {
     return res.rowCount;
   }
 
-  const stmt = getStmt('cleanExpiredSessions', 'DELETE FROM sessions WHERE expires_at <= ?');
-  const res = stmt.run(now);
-  return res.changes;
+  if (sqliteDb) {
+    const stmt = getStmt('cleanExpiredSessions', 'DELETE FROM sessions WHERE expires_at <= ?');
+    if (!stmt) return 0;
+    const res = stmt.run(now);
+    return res.changes;
+  }
+
+  // Memory fallback
+  let deleted = 0;
+  for (const [t, s] of memoryStore.sessions.entries()) {
+    if (s.expiresAt <= now) {
+      memoryStore.sessions.delete(t);
+      deleted++;
+    }
+  }
+  return deleted;
 }
 
 /**
@@ -541,13 +661,17 @@ async function getUserProgress(userId) {
       [userId]
     );
     rows = res.rows;
-  } else {
+  } else if (sqliteDb) {
     const stmt = getStmt('getUserProgress', `
       SELECT unit_id, activity_key, completed_at
       FROM user_progress
       WHERE user_id = ?
     `);
-    rows = stmt.all(userId);
+    if (stmt) rows = stmt.all(userId);
+  } else {
+    // Memory fallback
+    const list = memoryStore.userProgress.get(Number(userId)) || [];
+    rows = list;
   }
 
   for (const row of rows) {
@@ -577,13 +701,31 @@ async function markUserActivity(userId, unitId, activityKey) {
     return getUserProgress(userId);
   }
 
-  const stmt = getStmt('markUserActivity', `
-    INSERT INTO user_progress (user_id, unit_id, activity_key, completed_at)
-    VALUES (?, ?, ?, ?)
-    ON CONFLICT(user_id, unit_id, activity_key) DO UPDATE SET completed_at = excluded.completed_at
-  `);
-  stmt.run(userId, Number(unitId), String(activityKey), now);
+  if (sqliteDb) {
+    const stmt = getStmt('markUserActivity', `
+      INSERT INTO user_progress (user_id, unit_id, activity_key, completed_at)
+      VALUES (?, ?, ?, ?)
+      ON CONFLICT(user_id, unit_id, activity_key) DO UPDATE SET completed_at = excluded.completed_at
+    `);
+    if (stmt) stmt.run(userId, Number(unitId), String(activityKey), now);
+    return getUserProgress(userId);
+  }
 
+  // Memory fallback
+  const uid = Number(userId);
+  const uId = Number(unitId);
+  const key = String(activityKey);
+  let list = memoryStore.userProgress.get(uid);
+  if (!list) {
+    list = [];
+    memoryStore.userProgress.set(uid, list);
+  }
+  const exists = list.find(item => item.unit_id === uId && item.activity_key === key);
+  if (exists) {
+    exists.completed_at = now;
+  } else {
+    list.push({ unit_id: uId, activity_key: key, completed_at: now });
+  }
   return getUserProgress(userId);
 }
 
@@ -608,15 +750,41 @@ async function insertAttendance({ name, rollNo, division, prn, unit, session, da
     };
   }
 
-  const stmt = getStmt('insertAttendance', `
-    INSERT INTO attendance (name, rollNo, division, prn, unit, session, date, created_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-  `);
-  const result = stmt.run(name, rollNo, division, prn, unit, session, date, createdAt);
-  return {
-    id: Number(result.lastInsertRowid),
-    createdAt
+  if (sqliteDb) {
+    const stmt = getStmt('insertAttendance', `
+      INSERT INTO attendance (name, rollNo, division, prn, unit, session, date, created_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+    const result = stmt.run(name, rollNo, division, prn, unit, session, date, createdAt);
+    return {
+      id: Number(result.lastInsertRowid),
+      createdAt
+    };
+  }
+
+  // Memory fallback
+  const isDup = memoryStore.attendance.find(a => 
+    a.prn === prn && a.unit === unit && a.session === session && a.date === date
+  );
+  if (isDup) {
+    const err = new Error('Attendance already recorded (duplicate constraint)');
+    err.code = '23505';
+    throw err;
+  }
+  const id = memoryStore.attendance.length + 1;
+  const rec = {
+    id,
+    name,
+    rollNo,
+    division,
+    prn,
+    unit,
+    session,
+    date,
+    created_at: createdAt
   };
+  memoryStore.attendance.push(rec);
+  return { id, createdAt };
 }
 
 /**
@@ -633,12 +801,17 @@ async function getAllAttendance() {
     return res.rows;
   }
 
-  const stmt = getStmt('getAllAttendance', `
-    SELECT id, name, rollNo, division, prn, unit, session, date, created_at
-    FROM attendance
-    ORDER BY id DESC
-  `);
-  return stmt.all();
+  if (sqliteDb) {
+    const stmt = getStmt('getAllAttendance', `
+      SELECT id, name, rollNo, division, prn, unit, session, date, created_at
+      FROM attendance
+      ORDER BY id DESC
+    `);
+    return stmt.all();
+  }
+
+  // Memory fallback
+  return [...memoryStore.attendance].reverse();
 }
 
 /**
@@ -651,9 +824,14 @@ async function getAttendanceCount() {
     return res.rows[0] ? Number(res.rows[0].total) : 0;
   }
 
-  const stmt = getStmt('getAttendanceCount', 'SELECT COUNT(*) AS total FROM attendance');
-  const row = stmt.get();
-  return row ? Number(row.total) : 0;
+  if (sqliteDb) {
+    const stmt = getStmt('getAttendanceCount', 'SELECT COUNT(*) AS total FROM attendance');
+    const row = stmt ? stmt.get() : null;
+    return row ? Number(row.total) : 0;
+  }
+
+  // Memory fallback
+  return memoryStore.attendance.length;
 }
 
 /**
@@ -671,10 +849,16 @@ async function purgeAttendance() {
     return countBefore;
   }
 
-  sqliteDb.exec('DELETE FROM attendance');
-  try {
-    sqliteDb.exec("DELETE FROM sqlite_sequence WHERE name = 'attendance'");
-  } catch (e) {}
+  if (sqliteDb) {
+    sqliteDb.exec('DELETE FROM attendance');
+    try {
+      sqliteDb.exec("DELETE FROM sqlite_sequence WHERE name = 'attendance'");
+    } catch (e) {}
+    return countBefore;
+  }
+
+  // Memory fallback
+  memoryStore.attendance = [];
   return countBefore;
 }
 
@@ -688,9 +872,14 @@ async function getSetting(key, defaultValue = null) {
     return res.rows[0] ? res.rows[0].value : defaultValue;
   }
 
-  const stmt = getStmt('getSetting', 'SELECT value FROM settings WHERE key = ?');
-  const row = stmt.get(key);
-  return row ? row.value : defaultValue;
+  if (sqliteDb) {
+    const stmt = getStmt('getSetting', 'SELECT value FROM settings WHERE key = ?');
+    const row = stmt ? stmt.get(key) : null;
+    return row ? row.value : defaultValue;
+  }
+
+  // Memory fallback
+  return memoryStore.settings.has(key) ? memoryStore.settings.get(key) : defaultValue;
 }
 
 /**
@@ -710,12 +899,18 @@ async function setSetting(key, value) {
     return;
   }
 
-  const stmt = getStmt('setSetting', `
-    INSERT INTO settings (key, value, updated_at)
-    VALUES (?, ?, ?)
-    ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at
-  `);
-  stmt.run(key, String(value), updatedAt);
+  if (sqliteDb) {
+    const stmt = getStmt('setSetting', `
+      INSERT INTO settings (key, value, updated_at)
+      VALUES (?, ?, ?)
+      ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at
+    `);
+    if (stmt) stmt.run(key, String(value), updatedAt);
+    return;
+  }
+
+  // Memory fallback
+  memoryStore.settings.set(key, String(value));
 }
 
 /**

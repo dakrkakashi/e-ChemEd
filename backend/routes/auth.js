@@ -96,7 +96,7 @@ router.post('/auth/login', async (req, res) => {
     console.error('[AUTH LOGIN ERROR]:', err.message);
     return res.status(500).json({
       ok: false,
-      error: 'An internal authentication error occurred.'
+      error: err.message || 'An internal authentication error occurred.'
     });
   }
 });
