@@ -146,16 +146,19 @@
     },
 
     /**
-     * Trigger accessible validation shake (WCAG <= 200ms)
+     * Trigger accessible validation shake (WCAG <= 200ms) without forced synchronous layout
      */
     shake(element) {
       if (!element || this.isReduced()) return;
       element.classList.remove('motion-shake');
-      void element.offsetWidth; // Force reflow
-      element.classList.add('motion-shake');
-      setTimeout(() => {
-        element.classList.remove('motion-shake');
-      }, 220);
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          element.classList.add('motion-shake');
+          setTimeout(() => {
+            element.classList.remove('motion-shake');
+          }, 220);
+        });
+      });
     },
 
     /**

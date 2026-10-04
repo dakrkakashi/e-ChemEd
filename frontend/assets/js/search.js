@@ -210,8 +210,10 @@
 
     const searchInput = document.getElementById('global-search-input');
     if (searchInput) {
+      let searchDebounceTimer;
       searchInput.addEventListener('input', (e) => {
-        renderSearchResults(e.target.value);
+        clearTimeout(searchDebounceTimer);
+        searchDebounceTimer = setTimeout(() => renderSearchResults(e.target.value), 200);
       });
     }
   });

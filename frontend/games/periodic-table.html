@@ -7,6 +7,12 @@
   
   <meta name="description" content="Explore all 118 chemical elements with dynamic category filters, electron configurations, ionization energies, and atomic properties.">
   <link rel="icon" type="image/svg+xml" href="../assets/img/favicon.svg">
+  <meta name="theme-color" content="#faf7f2" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#181716" media="(prefers-color-scheme: dark)">
+
+  <!-- Performance: Preload critical fonts to eliminate FOUT -->
+  <link rel="preload" href="../assets/fonts/instrument-sans-normal-400.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../assets/fonts/newsreader-normal-600.woff2" as="font" type="font/woff2" crossorigin>
 
   <!-- Core Design System CSS -->
   <link rel="stylesheet" href="../assets/css/tokens.css">
@@ -102,6 +108,7 @@
   <script src="../assets/js/config.js"></script>
   <script src="../assets/js/auth.js"></script>
   <script src="../assets/js/data-store.js"></script>
+  <script src="../assets/js/elements-data.js"></script>
   <script src="../assets/js/motion.js"></script>
   <script src="../assets/js/main.js"></script>
   <script src="../assets/js/components.js"></script>

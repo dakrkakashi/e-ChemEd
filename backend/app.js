@@ -12,6 +12,7 @@ const authRoutes = require('./routes/auth');
 const progressRoutes = require('./routes/progress');
 const { attachUser } = require('./middleware/auth');
 const { dbEngine } = require('./db');
+const compression = require('compression');
 
 const app = express();
 const FRONTEND_PORT = String(process.env.FRONTEND_PORT || '3000');
@@ -90,6 +91,7 @@ const corsOptions = {
   allowedHeaders: ['Content-Type', 'x-admin-key', 'x-session-code', 'Authorization', 'x-session-token']
 };
 
+app.use(compression());
 app.use(cors(corsOptions));
 
 // JSON Body Parser with malformed JSON protection

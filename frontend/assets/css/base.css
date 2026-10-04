@@ -422,6 +422,13 @@ hr {
   display: none !important;
 }
 
+/* Performance: Prevent layout shift during number counter animations */
+[data-counter-target] {
+  font-variant-numeric: tabular-nums;
+  display: inline-block;
+  min-width: 1.5em;
+}
+
 /* Print Friendly Styles */
 @media print {
   body {

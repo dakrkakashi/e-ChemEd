@@ -7,6 +7,7 @@
 /* ==========================================================================
    1. Flat Solid Header & Navigation (No glassmorphism, no wrapping)
    ========================================================================== */
+#site-header,
 .site-header {
   position: sticky;
   top: 0;
@@ -15,6 +16,14 @@
   border-bottom: 1px solid var(--nav-border);
   transition: background-color var(--transition-normal), border-color var(--transition-normal);
   overflow-x: clip;
+  min-height: 69px;
+}
+
+@media (max-width: 480px) {
+  #site-header,
+  .site-header {
+    min-height: 61px;
+  }
 }
 
 .nav-container {
