@@ -17,7 +17,8 @@
     "migrate:postgres": "node scripts/init-postgres.js",
     "purge": "node backend/scripts/purge.js",
     "lint": "stylelint \"frontend/assets/css/**/*.css\"",
-    "test:perf": "node scripts/test-performance.js"
+    "test:perf": "node scripts/test-performance.js",
+    "test:hardening": "node scripts/verify-hardening.js"
   },
   "devDependencies": {
     "axe-core": "^4.13.0",

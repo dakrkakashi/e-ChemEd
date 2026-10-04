@@ -2,7 +2,7 @@
  * auth.js — User Authentication Routes
  * 
  * Provides:
- * - POST /api/auth/login: Authenticates credentials, creates session, sets HttpOnly cookie
+ * - POST /api/auth/login: Authenticates credentials, creates session, sets HttpOnly cookie (brute-force rate limited)
  * - POST /api/auth/logout: Terminates session, clears cookie
  * - GET  /api/auth/me: Returns current authenticated user and role
  * - GET  /api/auth/verify: Verifies token validity (for server-to-server or probe checks)
@@ -18,6 +18,7 @@ const {
   getSession 
 } = require('../db');
 const { extractToken, requireAuth } = require('../middleware/auth');
+const { loginRateLimit } = require('../middleware/rate-limit');
 
 function isRequestSecure(req) {
   if (req.secure) return true;
@@ -30,10 +31,19 @@ function isRequestSecure(req) {
 
 /**
  * POST /api/auth/login
+ * Rate limited to max 10 failed login attempts per 5 minutes per IP
  */
-router.post('/auth/login', async (req, res) => {
+router.post('/auth/login', loginRateLimit, async (req, res) => {
   try {
-    const { username, password } = req.body || {};
+    const body = req.body;
+    if (!body || typeof body !== 'object' || Array.isArray(body)) {
+      return res.status(400).json({
+        ok: false,
+        error: 'Invalid request: JSON object payload expected.'
+      });
+    }
+
+    const { username, password } = body;
 
     if (!username || typeof username !== 'string' || !username.trim()) {
       return res.status(400).json({
@@ -97,7 +107,7 @@ router.post('/auth/login', async (req, res) => {
     console.error('[AUTH LOGIN ERROR]:', err.message);
     return res.status(500).json({
       ok: false,
-      error: err.message || 'An internal authentication error occurred.'
+      error: 'An internal authentication error occurred.'
     });
   }
 });
@@ -168,3 +178,4 @@ router.get('/auth/verify', async (req, res) => {
 });
 
 module.exports = router;
+

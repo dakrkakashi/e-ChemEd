@@ -113,6 +113,16 @@ app.use((req, res, next) => {
   next();
 });
 
+// Standard HTTP Security Headers (OWASP Hardening)
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('Permissions-Policy', 'geolocation=(), camera=(), microphone=(), payment=()');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  next();
+});
+
 app.use(cors(corsOptions));
 
 // JSON Body Parser with malformed JSON protection
@@ -153,6 +163,9 @@ app.use('/api', (req, res) => {
 
 // Global error handler
 app.use((err, req, res, next) => {
+  if (res.headersSent) {
+    return next(err);
+  }
   if (err.message && err.message.includes('CORS policy rejection')) {
     return res.status(403).json({
       ok: false,
@@ -160,9 +173,17 @@ app.use((err, req, res, next) => {
     });
   }
   console.error('[UNHANDLED SERVER ERROR]', err.message);
-  res.status(500).json({
+  const statusCode = (typeof err.status === 'number' && err.status >= 400 && err.status < 600)
+    ? err.status
+    : (typeof err.statusCode === 'number' && err.statusCode >= 400 && err.statusCode < 600 ? err.statusCode : 500);
+
+  const clientMessage = statusCode >= 500
+    ? 'Internal server error.'
+    : (err.message || 'Request failed.');
+
+  res.status(statusCode).json({
     ok: false,
-    error: 'Internal server error.'
+    error: clientMessage
   });
 });
 

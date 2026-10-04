@@ -887,3 +887,57 @@
     text-align: left;
   }
 }
+
+/* ==========================================================================
+   Offline Status Indicator Pill (PWA Resiliency)
+   ========================================================================== */
+.offline-indicator-banner {
+  position: fixed;
+  bottom: calc(var(--space-4) + var(--safe-bottom));
+  left: 50%;
+  transform: translateX(-50%) translateY(120%);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  background-color: var(--bg-surface);
+  color: var(--text-main);
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-full);
+  box-shadow: var(--shadow-lg);
+  font-family: var(--font-sans);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-normal);
+  transition: transform var(--transition-normal), opacity var(--transition-normal);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.offline-indicator-banner.visible {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.offline-indicator-banner.is-offline {
+  border-color: var(--brand-accent);
+}
+
+.offline-indicator-banner.is-online {
+  border-color: var(--badge-live-text);
+}
+
+.offline-indicator-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  background-color: var(--brand-accent);
+  flex-shrink: 0;
+}
+
+.offline-indicator-banner.is-online .offline-indicator-dot {
+  background-color: var(--badge-live-text);
+}

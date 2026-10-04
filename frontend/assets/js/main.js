@@ -414,6 +414,51 @@
     });
   }
 
+  // Defensive Offline / Online Connection Status Indicator
+  function setupOfflineIndicator() {
+    let banner = document.getElementById('offline-indicator');
+    if (!banner) {
+      banner = document.createElement('div');
+      banner.id = 'offline-indicator';
+      banner.className = 'offline-indicator-banner';
+      banner.setAttribute('role', 'status');
+      banner.setAttribute('aria-live', 'polite');
+      banner.innerHTML = '<span class="offline-indicator-dot" aria-hidden="true"></span><span class="offline-indicator-text"></span>';
+      document.body.appendChild(banner);
+    }
+
+    const text = banner.querySelector('.offline-indicator-text');
+    let hideTimer = null;
+
+    function showOffline() {
+      if (hideTimer) clearTimeout(hideTimer);
+      banner.className = 'offline-indicator-banner visible is-offline';
+      if (text) text.textContent = 'Offline: Viewing cached curriculum content';
+    }
+
+    function showOnline() {
+      if (hideTimer) clearTimeout(hideTimer);
+      banner.className = 'offline-indicator-banner visible is-online';
+      if (text) text.textContent = 'Back online: Connection restored';
+      hideTimer = setTimeout(() => {
+        banner.classList.remove('visible');
+      }, 3000);
+    }
+
+    window.addEventListener('offline', showOffline);
+    window.addEventListener('online', showOnline);
+
+    if (!navigator.onLine) {
+      showOffline();
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setupOfflineIndicator);
+  } else {
+    setupOfflineIndicator();
+  }
+
   // Global helper to open modal
   window.openModal = function (modalId) {
     const modal = document.getElementById(modalId);
