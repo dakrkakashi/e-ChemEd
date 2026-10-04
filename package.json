@@ -6,6 +6,7 @@
     "node": ">=18.0.0"
   },
   "scripts": {
+    "build": "echo e-chemEd static assets ready",
     "start": "node scripts/serve-frontend.js",
     "backend": "node backend/server.js",
     "audit": "node scripts/verify-site.js",
