@@ -3,6 +3,43 @@
 
 e-chemEd is a self-contained, privacy-first educational suite for First-Year Engineering (FE) students. It combines syllabus mind maps, question banks, quizzes, interactive arcade games, video lectures, and a local student attendance logging server.
 
+> 📢 **Faculty & Department Pitch**: A plain-English teacher presentation guide with a 5-minute meeting script and demo walkthrough is available in [`TEACHER_PITCH.md`](TEACHER_PITCH.md).
+
+---
+
+## 🔐 Authentication, User Accounts & Route Protection
+
+e-chemEd features a robust, SQLite-backed authentication system that protects all learning pages while ensuring total student data privacy.
+
+### Pre-Seeded Demo Accounts
+
+The local SQLite database initializes automatically with two pre-configured accounts:
+
+| Role | Username | Password | Full Name | Associated Profile |
+|---|---|---|---|---|
+| **Faculty Admin** | `admin` | `admin123` | Dr. S. S. Chine | Faculty Coordinator. Full access to all curriculum pages plus the Faculty Admin Portal, live roster, session code manager, and attendance CSV export. |
+| **Student** | `student` | `student123` | Rahul Shinde | Roll No: `101`, Division: `A (Computer)`, PRN: `72183921B`. Access to all 5 syllabus units, mind maps, quizzes, games, videos, and self-service attendance. |
+
+### How Authentication & Route Protection Work
+
+1. **Server-Side Route Protection (`scripts/serve-frontend.js`)**:
+   - Any unauthenticated HTTP request attempting to access protected learning pages (`/index.html`, `/pages/*.html`, `/games/*.html`) is intercepted and automatically redirected with HTTP 302 to `/pages/login.html?redirect=<path>`.
+   - Public assets (`/assets/**`, `/config.json`, and `/pages/login.html`) remain publicly accessible without a session.
+2. **Cryptographic Password Security**:
+   - Passwords are never stored in plaintext. They are hashed using Node.js's native `crypto.scryptSync` with unique 16-byte random salts and verified using constant-time comparison (`crypto.timingSafeEqual`) to protect against timing attacks.
+3. **Session Management & Cookies**:
+   - Successful login generates a cryptographically secure 64-character session token stored in the SQLite `sessions` table (7-day default expiration).
+   - The token is delivered via an HTTP-only `echemed_session` cookie (`Path=/; SameSite=Lax`) and returned in the JSON payload for API clients using `Authorization: Bearer <token>` or `x-session-token` headers.
+4. **Client-Side Auth Guard (`frontend/assets/js/auth.js`)**:
+   - Automatically initializes `window.EchemAuth` across all pages.
+   - Dynamically updates navigation headers with the current user's name, role badge, and a one-click Sign Out button.
+   - Conditionally exposes the "Admin Portal" navigation link exclusively to users with the `admin` role.
+5. **Persistent User Progress Sync (`user_progress` Table)**:
+   - When a student completes an educational milestone (reading a mind map, watching a lecture video, reviewing question bank items, finishing a quiz, or playing an educational game), progress is saved to SQLite via `POST /api/progress`.
+   - Client uses optimistic local storage caching so learning progress is never lost even if the connection momentarily blinks.
+6. **Student Attendance Auto-Fill**:
+   - When an authenticated student navigates to `pages/attendance.html`, their Full Name, Roll Number, Division, and PRN are auto-populated from their session profile, eliminating student typing errors and proxy issues.
+
 ---
 
 ## 🚀 Quick Start (One-Click Launch)
@@ -97,43 +134,51 @@ Then restart the backend.
 
 ---
 
-## 🌐 Remote Deployment Guide
+## 🌐 Production Deployment (Vercel + PostgreSQL)
 
-e-chemEd can also be deployed to cloud hosting:
+e-chemEd is engineered for turnkey deployment to **Vercel** with a **PostgreSQL** database (Vercel Postgres or Neon):
 
-### 1. Frontend (Static Hosting)
-Deploy `frontend/` to **GitHub Pages**, **Netlify**, or **Vercel**:
-- Set the publish directory to `frontend/`.
-- Point the API base to your deployed backend using an override in your browser console:
-  ```javascript
-  localStorage.setItem('echemed_api_override', 'https://your-backend.onrender.com');
-  ```
-  Or define `window.__ECHEMED_API_OVERRIDE__ = 'https://your-backend.onrender.com'` in `frontend/assets/js/config.js`.
+- **Serverless API**: Handled via `api/index.js` running standard Node.js serverless functions.
+- **Durable Persistence**: Automatically switches to PostgreSQL when `POSTGRES_URL` or `DATABASE_URL` is detected, avoiding ephemeral filesystem data loss.
+- **Same-Origin API Integration**: Frontend dynamically uses relative `/api` paths on Vercel, eliminating hardcoded host or port assumptions.
+- **Automated Schema Bootstrap**: Automatically creates tables and seeds default `admin` and `student` accounts on first request.
 
-### 2. Backend (Node.js Service)
-Deploy `backend/` to **Render**, **Railway**, **Fly.io**, or an Ubuntu VPS:
-- Build command: `npm install`
-- Start command: `npm start`
-- Environment Variables:
-  - `PORT`: `3001` (or host-provided port)
-  - `ADMIN_KEY`: `<your-secure-secret-key>`
-  - `CORS_ORIGIN`: `https://your-frontend.netlify.app`
-  - `TRUST_PROXY`: `true`
-- Note: Persistent storage (volume) should be attached to `backend/data` so the SQLite database persists across redeployments.
+> 📖 **Full Deployment Walkthrough**: For step-by-step instructions on pushing to a public GitHub repository, configuring Vercel environment variables, and verifying production health, see [`DEPLOYMENT.md`](DEPLOYMENT.md).
 
 ---
 
-## 🔬 Database Architecture Evaluation: `better-sqlite3` vs `node:sqlite`
+## 🔬 Database Architecture: Multi-Engine Persistence
 
-| Factor | `better-sqlite3` (Primary Choice) | `node:sqlite` (Built-in Alternative) |
-|---|---|---|
-| **Node Compatibility** | Node 18, 20 LTS, 22, 24 | Node 22.5+ only (Not present in Node 18 or 20 LTS) |
-| **Dependencies** | Requires `better-sqlite3` npm package | Zero npm dependencies |
-| **C++ Build Requirement** | Uses prebuilt binaries; requires build tools if rebuilding | Zero build tools required |
-| **Performance** | Synchronous, rock-solid, WAL mode | Synchronous, experimental in 22.x |
+| Factor | PostgreSQL (Production / Vercel) | `better-sqlite3` (Local / Offline) | `node:sqlite` (Fallback) |
+|---|---|---|---|
+| **Target Runtime** | Vercel Serverless / Cloud Hosting | Local classroom laptops & PCs | Node 22.5+ without C++ build tools |
+| **Persistence** | Durable cloud database (Vercel Postgres / Neon) | Single local file (`backend/data/echemed.db`) | Single local file (`backend/data/echemed.db`) |
+| **Internet Required** | Yes (for cloud connection) | **No (100% offline-first)** | **No (100% offline-first)** |
+| **Connection Model** | `pg.Pool` connection pooling | Synchronous WAL mode | Synchronous built-in WAL mode |
+| **Activation** | Set `POSTGRES_URL` or `DATABASE_URL` | Default when `POSTGRES_URL` is unset | Automatic fallback |
 
-**Architectural Choice**:
-We selected **`better-sqlite3`** as the primary driver to fulfill the requirement for **Node 18+ backwards compatibility** (as Node 18 and Node 20 LTS lack `node:sqlite`). Furthermore, [`backend/db.js`](backend/db.js) implements an **intelligent fallback**: if `better-sqlite3` ever encounters a compilation issue on a Node 22+ host, it automatically utilizes built-in `node:sqlite` (`DatabaseSync`), ensuring 100% operational uptime.
+---
+
+## 🧪 Automated Verification & Test Suites
+
+The repository contains an end-to-end automated test suite verifying static assets, route protection, database persistence, role-based authorization, rate limiting, and LAN CORS:
+
+```bash
+# Run the complete verification suite (13 automated acceptance tests)
+npm test
+
+# Run the dedicated authentication, route protection & progress persistence suite
+npm run test:auth
+
+# Test PostgreSQL multi-engine adapter logic
+npm run test:adapter
+
+# Run PostgreSQL schema migration / bootstrap CLI
+npm run migrate:postgres
+
+# Audit all HTML links, tokens, and static JSON data integrity
+npm run audit
+```
 
 ---
 
@@ -141,41 +186,69 @@ We selected **`better-sqlite3`** as the primary driver to fulfill the requiremen
 
 ```
 e-chemEd/
+├── DEPLOYMENT.md                            # GitHub & Vercel production deployment walkthrough
+├── TEACHER_PITCH.md                         # Plain-English teacher pitch & 5-minute demo script
+├── vercel.json                              # Vercel serverless routing & security headers
+├── .env.example                             # Environment configuration template
+├── api/
+│   └── index.js                             # Vercel serverless function entry point
 ├── frontend/                                # All client-side files & assets
-│   ├── index.html                           # Main entry point
-│   ├── pages/                               # attendance.html, admin.html, unit.html, etc.
-│   ├── games/                               # periodic-table.html, unit1-puzzle.html, unit2-arcade.html
+│   ├── index.html                           # Main entry point (protected route)
+│   ├── pages/                               # Protected learning & faculty pages
+│   │   ├── login.html                       # Academic login page with role demo buttons
+│   │   ├── attendance.html                  # Auto-filled student attendance portal
+│   │   ├── admin.html                       # Faculty coordinator admin dashboard
+│   │   ├── unit.html                        # Unit syllabus and learning modules
+│   │   ├── mind-maps.html                   # Interactive visual syllabus mind maps
+│   │   ├── quizzes.html                     # Self-grading timed quizzes
+│   │   ├── question-bank.html               # Practice questions with model answers
+│   │   ├── video-lectures.html              # Offline MP4 lecture streaming
+│   │   └── games.html                       # Interactive games hub
+│   ├── games/                               # Chemistry arcade & puzzles
+│   │   ├── periodic-table.html              # Interactive periodic table
+│   │   ├── unit1-puzzle.html                # Water treatment reaction puzzle
+│   │   └── unit2-arcade.html                # Battery charging circuit game
 │   ├── assets/
 │   │   ├── css/                             # Design tokens, base styles, components
-│   │   ├── js/                              # config.js, data-store.js, main.js, components.js
+│   │   ├── js/                              # config.js, auth.js, data-store.js, main.js, components.js
 │   │   ├── docs/                            # Curriculum PDF documents
 │   │   ├── video/                           # Lecture MP4 videos
 │   │   └── img/                             # Logos, favicons, illustrations
 │   └── data/                                # Embedded offline JSON datasets
 ├── backend/
-│   ├── server.js                            # Express API entry point (Port 3001)
-│   ├── db.js                                # SQLite connection (WAL mode, parameterized SQL)
+│   ├── app.js                               # Shared Express application factory
+│   ├── server.js                            # Express API standalone entry point (Port 3001)
+│   ├── db.js                                # Multi-engine database adapter (PostgreSQL + SQLite)
 │   ├── data/                                # Local SQLite data store (echemed.db - git ignored)
-│   ├── routes/                              # attendance.js, health.js
+│   ├── routes/
+│   │   ├── attendance.js                    # Attendance logging & CSV export
+│   │   ├── auth.js                          # Login, logout, me, verify endpoints
+│   │   ├── health.js                        # Health check probe
+│   │   └── progress.js                      # Student progress database persistence
 │   ├── middleware/                          # auth.js, rate-limit.js, validation.js
 │   ├── config/academic-config.json          # Editable divisions, units, and sessions
 │   ├── scripts/purge.js                     # Semester data wipe script
 │   ├── package.json                         # Backend dependencies (engines >= 18.0.0)
-│   └── .env.example                         # Environment configuration template
+│   └── .env.example                         # Backend environment configuration template
 ├── scripts/
-│   ├── serve-frontend.js                    # Dependency-free HTTP static server (Range requests, Port 3000)
+│   ├── serve-frontend.js                    # Static HTTP server & server-side route guard (Port 3000)
 │   ├── check-ports.js                       # Port conflict validator
 │   ├── init-env.js                          # Auto-configuration of .env & ADMIN_KEY
+│   ├── init-postgres.js                     # PostgreSQL migration and seeding CLI tool
+│   ├── test-postgres-adapter.js             # PostgreSQL adapter integrity test
 │   ├── print-lan.js                         # Wi-Fi LAN IP detection
 │   ├── kill-pids.js                         # Clean process termination
 │   ├── wait-and-launch.js                   # Health polling & auto-browser launch
-│   └── verify-site.js                       # Link audit & asset integrity test
+│   ├── verify-site.js                       # Link audit & asset integrity test
+│   ├── verify-auth.js                       # Dedicated auth & route guard test suite
+│   └── verify-all.js                        # Comprehensive 13-stage acceptance test suite
 ├── start.bat                                # Windows double-click launcher
 ├── start.command                            # macOS double-click launcher
 ├── start.sh                                 # Linux launcher
 ├── stop.bat                                 # Windows server stopper
 ├── stop.sh                                  # Linux/macOS server stopper
 ├── .gitignore                               # Git exclusion rules
+├── package.json                             # Root scripts & serverless dependencies
 └── README.md                                # Platform documentation
 ```
 

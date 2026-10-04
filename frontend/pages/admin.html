@@ -266,11 +266,12 @@
   <footer id="site-footer"></footer>
 
   <!-- Scripts -->
+  <script src="../assets/js/config.js"></script>
+  <script src="../assets/js/auth.js"></script>
   <script src="../assets/js/data-store.js"></script>
   <script src="../assets/js/motion.js"></script>
   <script src="../assets/js/main.js"></script>
   <script src="../assets/js/components.js"></script>
-  <script src="../assets/js/config.js"></script>
 
   <script>
     (function () {
@@ -297,6 +298,16 @@
       const rosterSearch = document.getElementById('roster-search');
       const rosterFilterUnit = document.getElementById('roster-filter-unit');
 
+      function getRequestHeaders() {
+        const headers = (window.EchemAuth && window.EchemAuth.getAuthHeaders) 
+          ? window.EchemAuth.getAuthHeaders() 
+          : { 'Content-Type': 'application/json' };
+        if (inMemoryAdminKey) {
+          headers['x-admin-key'] = inMemoryAdminKey;
+        }
+        return headers;
+      }
+
       // Check backend health
       fetch(`${apiBase}/api/health`)
         .then(r => r.json())
@@ -313,7 +324,37 @@
           statusBadge.style.color = 'var(--unit-5)';
         });
 
-      // Authentication Handler
+      // Role check and auto-unlock for authenticated faculty admins
+      function checkAdminSession() {
+        const user = window.EchemAuth ? window.EchemAuth.currentUser : null;
+        if (user) {
+          if (user.role === 'admin') {
+            authMessage.style.display = 'block';
+            authMessage.style.color = 'var(--brand-primary)';
+            authMessage.textContent = `Signed in as Faculty Admin (${user.name}). Synchronizing live roster...`;
+            loadRosterAndSettings();
+          } else {
+            authMessage.style.display = 'block';
+            authMessage.style.color = 'var(--unit-5)';
+            authMessage.textContent = `Access Restricted: You are signed in as a Student (${user.name}). Faculty Coordinator privileges are required.`;
+            controlsPanel.style.display = 'none';
+            clearKeyBtn.style.display = 'none';
+          }
+        }
+      }
+
+      window.addEventListener('echemed:auth-changed', (e) => {
+        if (e.detail && e.detail.user) {
+          checkAdminSession();
+        }
+      });
+
+      // If user profile is already cached/loaded, run session check
+      if (window.EchemAuth && window.EchemAuth.currentUser) {
+        checkAdminSession();
+      }
+
+      // Authentication Handler for manual key entry
       authForm.addEventListener('submit', function (e) {
         e.preventDefault();
         const candidateKey = keyInput.value.trim();
@@ -338,18 +379,16 @@
         authMessage.textContent = 'Verifying credentials with attendance server...';
 
         try {
-          // Fetch attendance roster
           const res = await fetch(`${apiBase}/api/attendance`, {
-            headers: {
-              'x-admin-key': inMemoryAdminKey
-            }
+            headers: getRequestHeaders(),
+            credentials: 'include'
           });
 
           const data = await res.json();
 
-          if (res.status === 401 || !data.ok) {
+          if (res.status === 401 || res.status === 403 || !data.ok) {
             authMessage.style.color = 'var(--unit-5)';
-            authMessage.textContent = 'Access Denied: The ADMIN_KEY entered does not match backend configuration.';
+            authMessage.textContent = data.error || 'Access Denied: Faculty Administrator privileges or valid ADMIN_KEY required.';
             if (window.EchemMotion && window.EchemMotion.shake) {
               window.EchemMotion.shake(document.getElementById('admin-key-input'));
             }
@@ -380,7 +419,8 @@
       async function fetchSessionCode() {
         try {
           const res = await fetch(`${apiBase}/api/attendance/session-code`, {
-            headers: { 'x-admin-key': inMemoryAdminKey }
+            headers: getRequestHeaders(),
+            credentials: 'include'
           });
           const data = await res.json();
           if (data.ok) {
@@ -396,12 +436,12 @@
         const newCode = sessionCodeInput.value.trim();
         sessionCodeFeedback.textContent = 'Updating session code...';
         try {
+          const headers = getRequestHeaders();
+          headers['Content-Type'] = 'application/json';
           const res = await fetch(`${apiBase}/api/attendance/session-code`, {
             method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'x-admin-key': inMemoryAdminKey
-            },
+            headers,
+            credentials: 'include',
             body: JSON.stringify({ sessionCode: newCode })
           });
           const data = await res.json();
@@ -420,21 +460,19 @@
         }
       });
 
-      // CSV Export Button (Fetches using x-admin-key header ONLY, then triggers download via Blob)
+      // CSV Export Button (Fetches with auth headers, then triggers download via Blob)
       downloadCsvBtn.addEventListener('click', async function () {
-        if (!inMemoryAdminKey) return;
         exportFeedback.textContent = 'Preparing CSV file from database...';
 
         try {
           const res = await fetch(`${apiBase}/api/attendance/export.csv`, {
             method: 'GET',
-            headers: {
-              'x-admin-key': inMemoryAdminKey
-            }
+            headers: getRequestHeaders(),
+            credentials: 'include'
           });
 
           if (!res.ok) {
-            exportFeedback.textContent = 'Download failed: Unauthorized key.';
+            exportFeedback.textContent = 'Download failed: Unauthorized key or session.';
             return;
           }
 

@@ -8,18 +8,21 @@
 const readline = require('readline');
 const { purgeAttendance, getAttendanceCount } = require('../db');
 
-function executePurge() {
-  const count = purgeAttendance();
+async function executePurge() {
+  const count = await purgeAttendance();
   console.log(`\n[SUCCESS] Purged ${count} attendance records from echemed.db.`);
   console.log('The attendance database table is now empty and reset for the new semester.\n');
   process.exit(0);
 }
 
-const args = process.argv.slice(2);
-if (args.includes('--force') || args.includes('-y')) {
-  executePurge();
-} else {
-  const currentCount = getAttendanceCount();
+async function main() {
+  const args = process.argv.slice(2);
+  if (args.includes('--force') || args.includes('-y')) {
+    await executePurge();
+    return;
+  }
+
+  const currentCount = await getAttendanceCount();
   console.log('\n======================================================');
   console.log('           e-chemEd DATA PURGE CONFIRMATION           ');
   console.log('======================================================');
@@ -38,13 +41,18 @@ if (args.includes('--force') || args.includes('-y')) {
     output: process.stdout
   });
 
-  rl.question("To confirm data deletion, type 'PURGE' and press Enter: ", (answer) => {
+  rl.question("To confirm data deletion, type 'PURGE' and press Enter: ", async (answer) => {
     rl.close();
     if (answer.trim() === 'PURGE') {
-      executePurge();
+      await executePurge();
     } else {
       console.log('\n[CANCELLED] Purge confirmation did not match. No records were deleted.\n');
       process.exit(1);
     }
   });
 }
+
+main().catch(err => {
+  console.error('[PURGE ERROR]:', err);
+  process.exit(1);
+});

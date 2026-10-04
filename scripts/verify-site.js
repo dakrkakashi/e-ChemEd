@@ -7,6 +7,7 @@ console.log('Verifying e-chemEd website in:', ROOT_DIR);
 
 const htmlFiles = [
   'index.html',
+  'pages/login.html',
   'pages/unit.html',
   'pages/quizzes.html',
   'pages/question-bank.html',

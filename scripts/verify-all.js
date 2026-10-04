@@ -88,11 +88,11 @@ async function runSuite() {
 
   // Start live Frontend and Backend servers for subsequent tests
   console.log('--- STARTING LIVE SERVERS (Frontend 3000, Backend 3001) ---');
-  const frontendServer = require('./serve-frontend.js');
   const backendServer = require('../backend/server.js');
+  const frontendServer = require('./serve-frontend.js');
   const { setSetting, purgeAttendance } = require('../backend/db');
-  setSetting('session_code', '');
-  purgeAttendance();
+  await setSetting('session_code', '');
+  await purgeAttendance();
   await sleep(1500);
 
   // Retrieve admin key from environment
@@ -143,6 +143,18 @@ async function runSuite() {
     throw new Error('3d failed: Range request not satisfied with 206!');
   }
   console.log('[PASS] Test 3: Static server security and Range streaming verified.\n');
+
+  // STEP 3.5: Authentication, Route Guarding & SQLite Persistence Suite
+  console.log('--- TEST 3.5: AUTHENTICATION, ROUTE PROTECTION & SQLITE PERSISTENCE ---');
+  const { runAuthTests } = require('./verify-auth');
+  await runAuthTests();
+  console.log('[PASS] Test 3.5: Authentication, Route Protection & SQLite Persistence verified.\n');
+
+  // STEP 3.6: Vercel Serverless Function Export & Route Rewrites
+  console.log('--- TEST 3.6: VERCEL SERVERLESS FUNCTION EXPORT & ROUTE REWRITES ---');
+  const { testServerlessExport } = require('./test-serverless-export');
+  await testServerlessExport();
+  console.log('[PASS] Test 3.6: Vercel serverless export & route rewrites verified.\n');
 
   // STEP 4: Backend Health Check
   console.log('--- TEST 4: BACKEND HEALTH ENDPOINT ---');

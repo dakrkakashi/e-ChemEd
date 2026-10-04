@@ -8,6 +8,7 @@ node_modules/
 *.env
 backend/.env
 !backend/.env.example
+!.env.example
 
 # Sensitive Faculty PII (Photo & CV)
 frontend/assets/img/chinemam.jpg
@@ -59,3 +60,7 @@ $RECYCLE.BIN/
 # Vercel deployment cache and secrets
 .vercel/
 frontend/.vercel/
+
+# Graphify knowledge graph
+graphify-out/
+

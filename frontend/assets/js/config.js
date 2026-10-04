@@ -2,10 +2,11 @@
  * config.js — Dynamic Runtime Configuration for e-chemEd
  * 
  * Computes API_BASE dynamically so requests work seamlessly from:
- * 1. Localhost: http://localhost:3000 -> http://localhost:3001
- * 2. Mobile/Tablet over Wi-Fi LAN: http://192.168.x.x:3000 -> http://192.168.x.x:3001
- * 3. Local file:// protocol (falls back to http://localhost:3001)
- * 4. Production remote deployments (via window.__ECHEMED_API_OVERRIDE__ or localStorage)
+ * 1. Production Vercel & Cloud Deployments: Same-origin relative ('') without hardcoded localhost assumptions.
+ * 2. Localhost: http://localhost:3000 -> http://localhost:3001 (or same-origin via reverse proxy)
+ * 3. Mobile/Tablet over Wi-Fi LAN: http://192.168.x.x:3000 -> http://192.168.x.x:3001
+ * 4. Local file:// protocol (falls back to http://localhost:3001)
+ * 5. Manual overrides via window.__ECHEMED_API_OVERRIDE__ or localStorage['echemed_api_override']
  */
 
 (function () {
@@ -31,13 +32,25 @@
 
     // 2. Local file preview fallback
     if (window.location.protocol === 'file:') {
-      return `http://localhost:${port}`;
+      return `http://localhost:${port || 3001}`;
     }
 
-    // 3. Dynamic origin derivation for localhost & LAN IP addresses
     const protocol = window.location.protocol;
     const hostname = window.location.hostname || 'localhost';
-    return `${protocol}//${hostname}:${port}`;
+    const currentPort = window.location.port;
+
+    // 3. Deployed environments (Vercel, custom domain, production HTTPS, or standard web ports)
+    // When running in production on Vercel or any cloud domain, API routes are on the same origin ('')
+    const isVercel = hostname.endsWith('.vercel.app') || window.location.host.includes('vercel');
+    const isStandardPort = !currentPort || currentPort === '80' || currentPort === '443';
+    const isLocalDevPort = currentPort === '3000';
+
+    if (isVercel || isStandardPort || !isLocalDevPort) {
+      return ''; // Same-origin relative URL (/api/...)
+    }
+
+    // 4. Dynamic origin derivation for local development over port 3000
+    return `${protocol}//${hostname}:${port || 3001}`;
   }
 
   const config = {
@@ -64,13 +77,19 @@
         throw new Error('Config file unavailable');
       })
       .then(data => {
-        if (data && data.backendPort) {
-          config.backendPort = String(data.backendPort);
-          config.API_BASE = computeBaseUrl(config.backendPort);
+        if (data) {
+          if (data.sameOrigin) {
+            config.API_BASE = '';
+          } else if (data.backendPort) {
+            config.backendPort = String(data.backendPort);
+            if (!localStorage.getItem('echemed_api_override') && !window.__ECHEMED_API_OVERRIDE__) {
+              config.API_BASE = computeBaseUrl(config.backendPort);
+            }
+          }
         }
       })
       .catch(() => {
-        // Quiet fallback to default :3001
+        // Quiet fallback to computed base
       });
   }
 

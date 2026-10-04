@@ -30,7 +30,7 @@ function getAcademicConfig() {
   }
 }
 
-function validateAttendancePayload(req, res, next) {
+async function validateAttendancePayload(req, res, next) {
   const body = req.body;
   if (!body || typeof body !== 'object' || Array.isArray(body)) {
     return res.status(400).json({
@@ -41,7 +41,7 @@ function validateAttendancePayload(req, res, next) {
 
   // 1. Session Code Verification (if enabled)
   // Active code checked in database first (dynamic admin override), falling back to env var
-  const dbSessionCode = getSetting('session_code', '');
+  const dbSessionCode = await getSetting('session_code', '');
   const activeSessionCode = (dbSessionCode || process.env.SESSION_CODE || '').trim();
 
   if (activeSessionCode) {

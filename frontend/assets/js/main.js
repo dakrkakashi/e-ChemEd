@@ -73,36 +73,103 @@
   window.THEME_SUN_SVG = SUN_SVG;
   window.THEME_MOON_SVG = MOON_SVG;
 
-  // --- Student Progress Tracking API ---
+  // --- Student Progress Tracking API with SQLite Backend & Resilient Offline Cache ---
   const PROGRESS_KEY = 'echemed_progress';
 
-  window.EchemProgress = {
-    get() {
-      try {
-        return JSON.parse(localStorage.getItem(PROGRESS_KEY)) || {
-          units: {
-            1: { mindMapRead: false, videoWatched: false, questionBankViewed: false, quizCompleted: false, gamePlayed: false },
-            2: { mindMapRead: false, videoWatched: false, questionBankViewed: false, quizCompleted: false, gamePlayed: false },
-            3: { mindMapRead: false, videoWatched: false, questionBankViewed: false, quizCompleted: false, gamePlayed: false },
-            4: { mindMapRead: false, videoWatched: false, questionBankViewed: false, quizCompleted: false, gamePlayed: false },
-            5: { mindMapRead: false, videoWatched: false, questionBankViewed: false, quizCompleted: false, gamePlayed: false }
-          }
-        };
-      } catch (e) {
-        return { units: {} };
+  function getDefaultProgress() {
+    return {
+      units: {
+        1: { mindMapRead: false, videoWatched: false, questionBankViewed: false, quizCompleted: false, gamePlayed: false },
+        2: { mindMapRead: false, videoWatched: false, questionBankViewed: false, quizCompleted: false, gamePlayed: false },
+        3: { mindMapRead: false, videoWatched: false, questionBankViewed: false, quizCompleted: false, gamePlayed: false },
+        4: { mindMapRead: false, videoWatched: false, questionBankViewed: false, quizCompleted: false, gamePlayed: false },
+        5: { mindMapRead: false, videoWatched: false, questionBankViewed: false, quizCompleted: false, gamePlayed: false }
       }
+    };
+  }
+
+  window.EchemProgress = {
+    cached: null,
+
+    get() {
+      if (this.cached) return this.cached;
+      try {
+        const stored = JSON.parse(localStorage.getItem(PROGRESS_KEY));
+        if (stored && stored.units) {
+          this.cached = stored;
+          return stored;
+        }
+      } catch (e) {}
+      this.cached = getDefaultProgress();
+      return this.cached;
     },
 
     save(progress) {
-      localStorage.setItem(PROGRESS_KEY, JSON.stringify(progress));
+      this.cached = progress;
+      try {
+        localStorage.setItem(PROGRESS_KEY, JSON.stringify(progress));
+      } catch (e) {}
       window.dispatchEvent(new CustomEvent('echemed:progress-updated', { detail: progress }));
     },
 
-    markActivity(unitId, activityKey) {
+    async syncWithServer() {
+      const apiBase = (window.ECHEMED_CONFIG && window.ECHEMED_CONFIG.getApiBase) ? window.ECHEMED_CONFIG.getApiBase() : '';
+      const headers = (window.EchemAuth && window.EchemAuth.getAuthHeaders) ? window.EchemAuth.getAuthHeaders() : { 'Content-Type': 'application/json' };
+
+      try {
+        const res = await fetch(`${apiBase}/api/progress`, {
+          method: 'GET',
+          headers,
+          credentials: 'include'
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.ok && data.progress && data.progress.units) {
+            const current = this.get();
+            for (const [uId, uObj] of Object.entries(data.progress.units)) {
+              if (!current.units[uId]) current.units[uId] = {};
+              for (const [k, v] of Object.entries(uObj)) {
+                if (v) current.units[uId][k] = true;
+              }
+            }
+            this.save(current);
+            return current;
+          }
+        }
+      } catch (e) {
+        // Silently preserve local cache on network disruption
+      }
+      return this.get();
+    },
+
+    async markActivity(unitId, activityKey) {
       const data = this.get();
       if (!data.units[unitId]) data.units[unitId] = {};
       data.units[unitId][activityKey] = true;
       this.save(data);
+
+      // Asynchronously send to backend SQLite database
+      const apiBase = (window.ECHEMED_CONFIG && window.ECHEMED_CONFIG.getApiBase) ? window.ECHEMED_CONFIG.getApiBase() : '';
+      const headers = (window.EchemAuth && window.EchemAuth.getAuthHeaders) ? window.EchemAuth.getAuthHeaders() : { 'Content-Type': 'application/json' };
+
+      try {
+        const res = await fetch(`${apiBase}/api/progress`, {
+          method: 'POST',
+          headers,
+          credentials: 'include',
+          body: JSON.stringify({ unitId: Number(unitId), activityKey: String(activityKey) })
+        });
+        if (res.ok) {
+          const respData = await res.json();
+          if (respData && respData.ok && respData.progress) {
+            this.save(respData.progress);
+          }
+        }
+      } catch (err) {
+        // Non-blocking resilient UI: local state is preserved, user flow never breaks
+        console.warn('[PROGRESS SYNC NOTICE] Offline or temporary API unreachable. Local progress preserved.');
+      }
     },
 
     getUnitPercentage(unitId) {
@@ -114,6 +181,22 @@
       return Math.round((completed / keys.length) * 100);
     }
   };
+
+  // Sync progress upon auth change
+  window.addEventListener('echemed:auth-changed', (e) => {
+    if (e.detail && e.detail.user) {
+      window.EchemProgress.syncWithServer();
+    }
+  });
+
+  // Initial sync attempt if already authenticated
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+      window.EchemProgress.syncWithServer();
+    });
+  } else {
+    window.EchemProgress.syncWithServer();
+  }
 
   // Delegated theme toggle listener (works for dynamically injected buttons anywhere)
   document.addEventListener('click', (e) => {

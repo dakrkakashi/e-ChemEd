@@ -10,6 +10,11 @@
     "start": "node scripts/serve-frontend.js",
     "backend": "node backend/server.js",
     "audit": "node scripts/verify-site.js",
+    "test": "node scripts/verify-all.js",
+    "test:auth": "node scripts/verify-auth.js",
+    "test:adapter": "node scripts/test-postgres-adapter.js",
+    "test:serverless": "node scripts/test-serverless-export.js",
+    "migrate:postgres": "node scripts/init-postgres.js",
     "purge": "node backend/scripts/purge.js",
     "lint": "stylelint \"frontend/assets/css/**/*.css\""
   },
@@ -18,5 +23,11 @@
     "stylelint": "^17.16.0"
   },
   "author": "Department of Engineering Science & Humanities, Sanjivani COE",
-  "license": "UNLICENSED"
+  "license": "UNLICENSED",
+  "dependencies": {
+    "cors": "^2.8.6",
+    "dotenv": "^18.0.5",
+    "express": "^5.2.1",
+    "pg": "^8.23.1"
+  }
 }
