@@ -12,7 +12,12 @@ const authRoutes = require('./routes/auth');
 const progressRoutes = require('./routes/progress');
 const { attachUser } = require('./middleware/auth');
 const { dbEngine } = require('./db');
-const compression = require('compression');
+let compression;
+try {
+  compression = require('compression');
+} catch (e) {
+  compression = () => (req, res, next) => next();
+}
 
 const app = express();
 const FRONTEND_PORT = String(process.env.FRONTEND_PORT || '3000');
