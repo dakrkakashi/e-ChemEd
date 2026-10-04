@@ -92,42 +92,42 @@ async function runAuthTests() {
     console.log('[INFO] Reusing active servers on ports 3000 & 3001.');
   }
 
-  // TEST A2: Route Protection on Frontend Server
-  console.log('--- TEST A2: FRONTEND ROUTE PROTECTION ---');
-  // 1. Unauthenticated request to /index.html
+  // TEST A2: Open Access on Frontend Server & Legacy Login Redirect
+  console.log('--- TEST A2: FRONTEND OPEN ACCESS & LEGACY LOGIN REDIRECT ---');
+  // 1. Direct unauthenticated request to /index.html -> 200 OK
   const unauthIndex = await request({
     host: '127.0.0.1',
     port: FRONTEND_PORT,
     path: '/index.html',
     method: 'GET'
   });
-  console.log(`Unauthenticated GET /index.html -> Status: ${unauthIndex.statusCode}, Location: ${unauthIndex.headers.location}`);
-  if (unauthIndex.statusCode !== 302 || !unauthIndex.headers.location || !unauthIndex.headers.location.includes('/pages/login.html')) {
-    throw new Error('Test A2 failed: Protected HTML page was not redirected to /pages/login.html!');
+  console.log(`Direct GET /index.html -> Status: ${unauthIndex.statusCode} (Expected 200 OK)`);
+  if (unauthIndex.statusCode !== 200) {
+    throw new Error(`Test A2 failed: /index.html was not accessible with 200 OK! Got ${unauthIndex.statusCode}`);
   }
 
-  // 2. Unauthenticated request to /pages/unit.html
+  // 2. Direct unauthenticated request to /pages/unit.html -> 200 OK
   const unauthUnit = await request({
     host: '127.0.0.1',
     port: FRONTEND_PORT,
     path: '/pages/unit.html',
     method: 'GET'
   });
-  console.log(`Unauthenticated GET /pages/unit.html -> Status: ${unauthUnit.statusCode}, Location: ${unauthUnit.headers.location}`);
-  if (unauthUnit.statusCode !== 302 || !unauthUnit.headers.location.includes('/pages/login.html')) {
-    throw new Error('Test A2 failed: Protected unit page was not redirected to /pages/login.html!');
+  console.log(`Direct GET /pages/unit.html -> Status: ${unauthUnit.statusCode} (Expected 200 OK)`);
+  if (unauthUnit.statusCode !== 200) {
+    throw new Error(`Test A2 failed: /pages/unit.html was not accessible with 200 OK! Got ${unauthUnit.statusCode}`);
   }
 
-  // 3. Public request to /pages/login.html
+  // 3. Legacy request to /pages/login.html -> 302 redirect to /index.html
   const loginPageRes = await request({
     host: '127.0.0.1',
     port: FRONTEND_PORT,
     path: '/pages/login.html',
     method: 'GET'
   });
-  console.log(`Public GET /pages/login.html -> Status: ${loginPageRes.statusCode}`);
-  if (loginPageRes.statusCode !== 200) {
-    throw new Error('Test A2 failed: /pages/login.html failed to serve 200 OK!');
+  console.log(`Legacy GET /pages/login.html -> Status: ${loginPageRes.statusCode}, Location: ${loginPageRes.headers.location}`);
+  if (loginPageRes.statusCode !== 302 || !loginPageRes.headers.location || !loginPageRes.headers.location.endsWith('/index.html')) {
+    throw new Error('Test A2 failed: Legacy /pages/login.html did not redirect to /index.html!');
   }
 
   // 4. Public request to static asset
@@ -141,7 +141,7 @@ async function runAuthTests() {
   if (cssRes.statusCode !== 200) {
     throw new Error('Test A2 failed: Static css assets must be accessible publicly!');
   }
-  console.log('[PASS] A2: Server-side route protection verified.\n');
+  console.log('[PASS] A2: Open access and legacy login redirect verified.\n');
 
   // TEST A3: Login API Authentication
   console.log('--- TEST A3: LOGIN API AUTHENTICATION ---');
@@ -337,19 +337,18 @@ async function runAuthTests() {
     throw new Error('Test A7 failed: Terminated session was not rejected with 401!');
   }
 
-  // Verify subsequent GET /index.html redirects to login
+  // Verify subsequent GET /index.html serves 200 OK (open access for all students)
   const indexAfter = await request({
     host: '127.0.0.1',
     port: FRONTEND_PORT,
     path: '/index.html',
-    method: 'GET',
-    headers: { 'Cookie': `echemed_session=${studentToken}` }
+    method: 'GET'
   });
-  console.log(`GET /index.html after logout -> Status: ${indexAfter.statusCode}, Redirect: ${indexAfter.headers.location}`);
-  if (indexAfter.statusCode !== 302 || !indexAfter.headers.location.includes('/pages/login.html')) {
-    throw new Error('Test A7 failed: Terminated session was not redirected to login page!');
+  console.log(`GET /index.html after logout -> Status: ${indexAfter.statusCode} (Expected 200 OK open access)`);
+  if (indexAfter.statusCode !== 200) {
+    throw new Error('Test A7 failed: /index.html failed to serve 200 OK after logout!');
   }
-  console.log('[PASS] A7: Logout cleanly terminates session and restores route protection.\n');
+  console.log('[PASS] A7: Logout cleanly terminates session while preserving open access to learning pages.\n');
 
   console.log('======================================================================');
   console.log('   ALL AUTHENTICATION & PERSISTENCE TESTS PASSED (100% SUCCESS)       ');

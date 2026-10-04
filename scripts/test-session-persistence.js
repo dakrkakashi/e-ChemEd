@@ -240,19 +240,30 @@ async function runSessionPersistenceTests() {
     throw new Error('Test 5 failed: Terminated session was not rejected with 401!');
   }
 
-  // Subsequent page request must redirect to login
+  // Subsequent page request is directly accessible (open access)
   const pageAfterLogout = await request({
     host: '127.0.0.1',
     port: FRONTEND_PORT,
     path: '/pages/attendance.html',
-    method: 'GET',
-    headers: { 'Cookie': cookieHeader }
+    method: 'GET'
   });
-  console.log(`GET /pages/attendance.html after logout -> Status: ${pageAfterLogout.statusCode}, Location: ${pageAfterLogout.headers.location}`);
-  if (pageAfterLogout.statusCode !== 302 || !pageAfterLogout.headers.location.includes('/pages/login.html')) {
-    throw new Error('Test 5 failed: Terminated session was not redirected to /pages/login.html!');
+  console.log(`GET /pages/attendance.html after logout -> Status: ${pageAfterLogout.statusCode} (Expected 200 OK open access)`);
+  if (pageAfterLogout.statusCode !== 200) {
+    throw new Error('Test 5 failed: /pages/attendance.html was not accessible 200 OK after logout!');
   }
-  console.log('[PASS] Test 5: Explicit logout immediately terminates session across DB and route guards.');
+
+  // Legacy login URL redirects to home
+  const legacyLogin = await request({
+    host: '127.0.0.1',
+    port: FRONTEND_PORT,
+    path: '/pages/login.html',
+    method: 'GET'
+  });
+  console.log(`GET /pages/login.html -> Status: ${legacyLogin.statusCode}, Location: ${legacyLogin.headers.location}`);
+  if (legacyLogin.statusCode !== 302 || !legacyLogin.headers.location?.endsWith('/index.html')) {
+    throw new Error('Test 5 failed: Legacy login page did not redirect to /index.html!');
+  }
+  console.log('[PASS] Test 5: Explicit logout immediately terminates session while maintaining open access.');
 
   console.log('\n======================================================================');
   console.log('       ALL PERSISTENCE & NAVIGATION REGRESSION TESTS PASSED!          ');

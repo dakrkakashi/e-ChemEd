@@ -140,19 +140,18 @@ Once deployed to `https://your-app.vercel.app`, perform this 2-minute smoke test
        "dbEngine": "postgresql"
      }
      ```
-2. **Verify Route Guarding**:
+2. **Verify Open Student Access**:
    - Open `https://your-app.vercel.app/` in a fresh Incognito window.
-   - Confirm automatic redirect to `https://your-app.vercel.app/pages/login.html?redirect=%2Findex.html`.
-3. **Verify Student Login**:
-   - Click **Fill Student** (`student` / `student123`) and click **Sign In**.
-   - Verify header shows `Rahul Shinde` with `Student` badge.
-   - Open **Attendance**, select `Lecture`, and click **Submit Attendance**.
+   - Confirm immediate access to the home page with all 5 chemistry units, mind maps, quizzes, and arcade games without any login barrier.
+3. **Verify Student Attendance Logging**:
+   - Open **Attendance** (`/pages/attendance.html`).
+   - Fill student name, roll number, division, and PRN, and click **Submit Attendance**.
 4. **Verify Duplicate Protection**:
    - Click **Submit Attendance** a second time.
    - Verify response: *"Attendance already recorded"*.
-5. **Verify Admin Roster & CSV Export**:
-   - Click **Sign Out**, then sign in with **Fill Admin** (`admin` / `admin123`).
-   - Click **Admin Portal** in navigation.
+5. **Verify Faculty Admin Roster & CSV Export**:
+   - Click **Faculty Portal** (`/pages/admin.html`) in the top navigation.
+   - Enter your configured `ADMIN_KEY`.
    - Verify live attendance record appears in the table.
    - Click **Download Attendance CSV** and confirm RFC-4180 formatted CSV download.
 

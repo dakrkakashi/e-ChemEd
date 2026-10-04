@@ -24,24 +24,18 @@
       : (window.EchemAuth && typeof window.EchemAuth.getCachedUser === 'function' ? window.EchemAuth.getCachedUser() : null);
   }
 
-  // Navigation Links generator depending on user role
+  // Navigation Links generator
   function getNavItems() {
-    const user = getCurrentUser();
-    const items = [
+    return [
       { label: 'Home', href: `${prefix}index.html`, id: 'nav-home' },
       { label: 'Mind Maps', href: `${prefix}pages/mind-maps.html`, id: 'nav-mindmaps' },
       { label: 'Quizzes', href: `${prefix}pages/quizzes.html`, id: 'nav-quizzes' },
       { label: 'Question Bank', href: `${prefix}pages/question-bank.html`, id: 'nav-qbank' },
       { label: 'Video Lectures', href: `${prefix}pages/video-lectures.html`, id: 'nav-videos' },
       { label: 'Attendance', href: `${prefix}pages/attendance.html`, id: 'nav-attendance' },
-      { label: 'Games', href: `${prefix}pages/games.html`, id: 'nav-games' }
+      { label: 'Games', href: `${prefix}pages/games.html`, id: 'nav-games' },
+      { label: 'Faculty Portal', href: `${prefix}pages/admin.html`, id: 'nav-admin' }
     ];
-
-    if (user && user.role === 'admin') {
-      items.push({ label: 'Admin Portal', href: `${prefix}pages/admin.html`, id: 'nav-admin' });
-    }
-
-    return items;
   }
 
   // Render Site Header
@@ -73,35 +67,9 @@
       })
       .join('');
 
-    // User status badge HTML
-    let userBadgeHtml = '';
-    let drawerUserHtml = '';
-
-    if (user) {
-      const roleLabel = user.role === 'admin' ? 'Faculty Admin' : 'Student';
-      const roleBadgeColor = user.role === 'admin' ? 'var(--brand-primary)' : 'var(--unit-1)';
-      userBadgeHtml = `
-        <div class="user-nav-badge" style="display:inline-flex; align-items:center; gap:0.4rem; padding:0.25rem 0.6rem; background:var(--bg-subtle); border:1px solid var(--border-light); border-radius:var(--radius-full); font-size:var(--text-xs);" title="Signed in as ${user.name} (${roleLabel})">
-          <span style="font-weight:600; color:var(--text-main); max-width:110px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${user.name}</span>
-          <span style="font-size:10px; padding:0.1rem 0.4rem; border-radius:var(--radius-full); background:${roleBadgeColor}; color:#fff; font-weight:600;">${user.role === 'admin' ? 'Faculty' : 'Student'}</span>
-          <button type="button" class="btn-sign-out" id="header-sign-out-btn" aria-label="Sign out" title="Sign out" style="background:transparent; border:none; color:var(--text-muted); cursor:pointer; padding:2px; display:inline-flex; align-items:center;">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
-          </button>
-        </div>
-      `;
-
-      drawerUserHtml = `
-        <div class="drawer-user-box" style="padding:var(--space-3) var(--space-4); background:var(--bg-subtle); border:1px solid var(--border-light); border-radius:var(--radius-lg); margin-bottom:var(--space-4); display:flex; align-items:center; justify-content:space-between;">
-          <div style="overflow:hidden;">
-            <div style="font-weight:600; font-size:var(--text-sm); color:var(--text-main); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${user.name}</div>
-            <div style="font-size:var(--text-xs); color:var(--text-muted);">${user.role === 'admin' ? 'Faculty Coordinator' : `PRN: ${user.prn || user.roll_no || 'Student'}`}</div>
-          </div>
-          <button type="button" class="btn btn-outline btn-sm drawer-logout-btn" id="drawer-logout-btn" style="min-height:34px; padding:0 0.6rem; font-size:var(--text-xs); flex-shrink:0;">
-            Sign Out
-          </button>
-        </div>
-      `;
-    }
+    // User status badge omitted as login is removed
+    const userBadgeHtml = '';
+    const drawerUserHtml = '';
 
     headerEl.className = 'site-header';
     headerEl.innerHTML = `
