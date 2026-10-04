@@ -405,6 +405,15 @@
     }
   });
 
+  // Offline-First Service Worker Registration
+  if ('serviceWorker' in navigator && window.location.protocol.startsWith('http')) {
+    window.addEventListener('load', () => {
+      const isSubdir = window.location.pathname.includes('/pages/') || window.location.pathname.includes('/games/');
+      const swUrl = (isSubdir ? '../' : './') + 'sw.js';
+      navigator.serviceWorker.register(swUrl).catch(() => {});
+    });
+  }
+
   // Global helper to open modal
   window.openModal = function (modalId) {
     const modal = document.getElementById(modalId);
