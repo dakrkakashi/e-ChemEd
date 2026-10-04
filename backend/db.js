@@ -220,22 +220,38 @@ if (!isPostgres) {
     }
     const DB_PATH = path.join(DB_DIR, 'echemed.db');
 
-    try {
-      const Database = require('better-sqlite3');
-      sqliteDb = new Database(DB_PATH);
-      sqliteDb.pragma('journal_mode = WAL');
-      sqliteDb.pragma('foreign_keys = ON');
-      sqliteDb.pragma('busy_timeout = 5000');
-      dbEngine = 'better-sqlite3';
-    } catch (err) {
+    const nodeMajor = parseInt(process.versions.node.split('.')[0], 10);
+    // Prefer native node:sqlite for Node 22+ to prevent C++ addon cleanup assertion crashes
+    if (nodeMajor >= 22) {
       try {
         const { DatabaseSync } = require('node:sqlite');
         sqliteDb = new DatabaseSync(DB_PATH);
         sqliteDb.exec('PRAGMA journal_mode = WAL;');
         sqliteDb.exec('PRAGMA foreign_keys = ON;');
         dbEngine = 'node:sqlite';
-      } catch (err2) {
-        dbEngine = 'memory-fallback';
+      } catch (e) {
+        // Fall back to better-sqlite3 below
+      }
+    }
+
+    if (!sqliteDb) {
+      try {
+        const Database = require('better-sqlite3');
+        sqliteDb = new Database(DB_PATH);
+        sqliteDb.pragma('journal_mode = WAL');
+        sqliteDb.pragma('foreign_keys = ON');
+        sqliteDb.pragma('busy_timeout = 5000');
+        dbEngine = 'better-sqlite3';
+      } catch (err) {
+        try {
+          const { DatabaseSync } = require('node:sqlite');
+          sqliteDb = new DatabaseSync(DB_PATH);
+          sqliteDb.exec('PRAGMA journal_mode = WAL;');
+          sqliteDb.exec('PRAGMA foreign_keys = ON;');
+          dbEngine = 'node:sqlite';
+        } catch (err2) {
+          dbEngine = 'memory-fallback';
+        }
       }
     }
 

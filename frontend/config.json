@@ -1,4 +1,5 @@
 {
+  "sameOrigin": true,
   "backendPort": 3001,
   "frontendPort": 3000
 }

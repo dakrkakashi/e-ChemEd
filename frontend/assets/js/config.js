@@ -39,17 +39,18 @@
     const hostname = window.location.hostname || 'localhost';
     const currentPort = window.location.port;
 
-    // 3. Deployed environments (Vercel, custom domain, production HTTPS, or standard web ports)
-    // When running in production on Vercel or any cloud domain, API routes are on the same origin ('')
+    // 3. Deployed environments and local frontend proxy (port 3000)
+    // When running on Vercel, cloud domain, standard web ports, or serve-frontend.js (port 3000),
+    // API routes are on the same origin ('') via reverse proxy or serverless routing.
     const isVercel = hostname.endsWith('.vercel.app') || window.location.host.includes('vercel');
     const isStandardPort = !currentPort || currentPort === '80' || currentPort === '443';
-    const isLocalDevPort = currentPort === '3000';
+    const isFrontendProxyPort = currentPort === '3000';
 
-    if (isVercel || isStandardPort || !isLocalDevPort) {
+    if (isVercel || isStandardPort || isFrontendProxyPort) {
       return ''; // Same-origin relative URL (/api/...)
     }
 
-    // 4. Dynamic origin derivation for local development over port 3000
+    // 4. Non-proxied static servers (e.g. VS Code Live Server on port 5500)
     return `${protocol}//${hostname}:${port || 3001}`;
   }
 

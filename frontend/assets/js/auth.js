@@ -113,9 +113,35 @@
             window.dispatchEvent(new CustomEvent('echemed:auth-changed', { detail: { user: this.currentUser } }));
             return this.currentUser;
           }
+        } else if (res.status === 401) {
+          // Explicit 401 Unauthorized: Session is genuinely expired, purged, or invalid
+          this.currentUser = null;
+          this.setCachedUser(null);
+          this.setToken(null);
+          this.isInitialized = true;
+          window.dispatchEvent(new CustomEvent('echemed:auth-changed', { detail: { user: null } }));
+
+          // If on protected page, redirect to login
+          if (!isLoginPage) {
+            const currentPath = window.location.pathname + window.location.search;
+            const prefix = getRootPrefix();
+            window.location.replace(`${prefix}pages/login.html?redirect=${encodeURIComponent(currentPath)}`);
+          }
+          return null;
+        } else {
+          // Server error (500, 502, 503, 504) or transient endpoint status:
+          // Resilient fallback: DO NOT wipe token or force redirect.
+          console.warn('[AUTH] Non-terminal server response during auth check:', res.status);
+          const cached = this.getCachedUser();
+          if (cached) {
+            this.currentUser = cached;
+            this.isInitialized = true;
+            return this.currentUser;
+          }
         }
       } catch (err) {
-        // In case of network glitch, check cached user
+        // Network disruption / offline: preserve cached session
+        console.warn('[AUTH] Network error during auth check:', err.message);
         const cached = this.getCachedUser();
         if (cached) {
           this.currentUser = cached;
@@ -124,20 +150,20 @@
         }
       }
 
-      this.currentUser = null;
-      this.setCachedUser(null);
-      this.setToken(null);
-      this.isInitialized = true;
-      window.dispatchEvent(new CustomEvent('echemed:auth-changed', { detail: { user: null } }));
+      // If user had no token and no cached user, redirect if on protected page
+      if (!this.getToken() && !this.getCachedUser()) {
+        this.currentUser = null;
+        this.isInitialized = true;
+        window.dispatchEvent(new CustomEvent('echemed:auth-changed', { detail: { user: null } }));
 
-      // If on protected page, redirect to login
-      if (!isLoginPage) {
-        const currentPath = window.location.pathname + window.location.search;
-        const prefix = getRootPrefix();
-        window.location.replace(`${prefix}pages/login.html?redirect=${encodeURIComponent(currentPath)}`);
+        if (!isLoginPage) {
+          const currentPath = window.location.pathname + window.location.search;
+          const prefix = getRootPrefix();
+          window.location.replace(`${prefix}pages/login.html?redirect=${encodeURIComponent(currentPath)}`);
+        }
       }
 
-      return null;
+      return this.currentUser;
     },
 
     async login(username, password) {
@@ -191,6 +217,7 @@
       this.currentUser = null;
       this.setToken(null);
       this.setCachedUser(null);
+      window.dispatchEvent(new CustomEvent('echemed:auth-changed', { detail: { user: null } }));
 
       const prefix = getRootPrefix();
       window.location.replace(`${prefix}pages/login.html`);
@@ -199,6 +226,27 @@
 
   // Pre-seed currentUser from cache for immediate UI rendering without layout shifts
   auth.currentUser = auth.getCachedUser();
+
+  // Multi-tab cross-tab synchronization
+  window.addEventListener('storage', function (e) {
+    if (e.key === TOKEN_KEY || e.key === USER_KEY) {
+      const updatedUser = auth.getCachedUser();
+      const updatedToken = auth.getToken();
+
+      if (!updatedToken || !updatedUser) {
+        auth.currentUser = null;
+        window.dispatchEvent(new CustomEvent('echemed:auth-changed', { detail: { user: null } }));
+        if (!isLoginPage) {
+          const currentPath = window.location.pathname + window.location.search;
+          const prefix = getRootPrefix();
+          window.location.replace(`${prefix}pages/login.html?redirect=${encodeURIComponent(currentPath)}`);
+        }
+      } else {
+        auth.currentUser = updatedUser;
+        window.dispatchEvent(new CustomEvent('echemed:auth-changed', { detail: { user: updatedUser } }));
+      }
+    }
+  });
 
   window.EchemAuth = auth;
 

@@ -20,11 +20,12 @@ const {
 const { extractToken, requireAuth } = require('../middleware/auth');
 
 function isRequestSecure(req) {
-  return Boolean(
-    req.secure ||
-    req.headers['x-forwarded-proto'] === 'https' ||
-    process.env.NODE_ENV === 'production'
-  );
+  if (req.secure) return true;
+  const proto = req.headers['x-forwarded-proto'];
+  if (typeof proto === 'string') {
+    return proto.split(',')[0].trim().toLowerCase() === 'https';
+  }
+  return false;
 }
 
 /**

@@ -33,11 +33,39 @@ async function checkValidSession(token) {
   if (!token) return false;
   try {
     if (!getSession) {
-      getSession = require('../backend/db').getSession;
+      const dbModule = require('../backend/db');
+      getSession = dbModule.getSession;
     }
     const session = await getSession(token);
-    return Boolean(session && session.user);
-  } catch (err) {
+    if (session && session.user) return true;
+  } catch (err) {}
+
+  // Inter-process fallback: Query backend /api/auth/verify to handle in-memory fallback mode
+  try {
+    return await new Promise((resolve) => {
+      const probeReq = http.request({
+        host: '127.0.0.1',
+        port: BACKEND_PORT,
+        path: `/api/auth/verify?token=${encodeURIComponent(token)}`,
+        method: 'GET',
+        timeout: 1000
+      }, (probeRes) => {
+        let raw = '';
+        probeRes.on('data', chunk => raw += chunk);
+        probeRes.on('end', () => {
+          try {
+            const data = JSON.parse(raw);
+            resolve(Boolean(data && data.valid && data.user));
+          } catch (e) {
+            resolve(false);
+          }
+        });
+      });
+      probeReq.on('error', () => resolve(false));
+      probeReq.on('timeout', () => { probeReq.destroy(); resolve(false); });
+      probeReq.end();
+    });
+  } catch (e) {
     return false;
   }
 }
@@ -136,6 +164,7 @@ const server = http.createServer(async (req, res) => {
   // Special Route: /config.json provides dynamic runtime configuration to frontend
   if (urlPath === '/config.json') {
     const configData = JSON.stringify({
+      sameOrigin: true,
       backendPort: BACKEND_PORT,
       frontendPort: PORT,
       timestamp: new Date().toISOString()
