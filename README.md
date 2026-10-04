@@ -7,38 +7,22 @@ e-chemEd is a self-contained, privacy-first educational suite for First-Year Eng
 
 ---
 
-## 🔐 Authentication, User Accounts & Route Protection
+## 📚 Open Access & Faculty Portal Security
 
-e-chemEd features a robust, SQLite-backed authentication system that protects all learning pages while ensuring total student data privacy.
+e-chemEd is designed for friction-free student learning with open, direct access to all syllabus units and interactive activities, coupled with secure faculty administration.
 
-### Pre-Seeded Demo Accounts
+### Friction-Free Student Access
+All learning pages and resources are openly accessible without requiring user sign-in or accounts:
+- **5 Complete Syllabus Units**: Direct access to all theory modules, syllabus units, and multimedia.
+- **Syllabus Mind Maps & Interactive Quizzes**: Immediate access across all units.
+- **Question Banks & Video Lectures**: Open learning and review materials.
+- **Educational Games**: Interactive chemistry learning games (Periodic Table, Unit 1 Puzzle, Unit 2 Arcade).
+- **Self-Service Attendance Logging**: Students submit their name, roll number, division, and PRN directly with duplicate submission protection.
 
-The local SQLite database initializes automatically with two pre-configured accounts:
-
-| Role | Username | Password | Full Name | Associated Profile |
-|---|---|---|---|---|
-| **Faculty Admin** | `admin` | `admin123` | Dr. S. S. Chine | Faculty Coordinator. Full access to all curriculum pages plus the Faculty Admin Portal, live roster, session code manager, and attendance CSV export. |
-| **Student** | `student` | `student123` | Rahul Shinde | Roll No: `101`, Division: `A (Computer)`, PRN: `72183921B`. Access to all 5 syllabus units, mind maps, quizzes, games, videos, and self-service attendance. |
-
-### How Authentication & Route Protection Work
-
-1. **Server-Side Route Protection (`scripts/serve-frontend.js`)**:
-   - Any unauthenticated HTTP request attempting to access protected learning pages (`/index.html`, `/pages/*.html`, `/games/*.html`) is intercepted and automatically redirected with HTTP 302 to `/pages/login.html?redirect=<path>`.
-   - Public assets (`/assets/**`, `/config.json`, and `/pages/login.html`) remain publicly accessible without a session.
-2. **Cryptographic Password Security**:
-   - Passwords are never stored in plaintext. They are hashed using Node.js's native `crypto.scryptSync` with unique 16-byte random salts and verified using constant-time comparison (`crypto.timingSafeEqual`) to protect against timing attacks.
-3. **Session Management & Cookies**:
-   - Successful login generates a cryptographically secure 64-character session token stored in the SQLite `sessions` table (7-day default expiration).
-   - The token is delivered via an HTTP-only `echemed_session` cookie (`Path=/; SameSite=Lax`) and returned in the JSON payload for API clients using `Authorization: Bearer <token>` or `x-session-token` headers.
-4. **Client-Side Auth Guard (`frontend/assets/js/auth.js`)**:
-   - Automatically initializes `window.EchemAuth` across all pages.
-   - Dynamically updates navigation headers with the current user's name, role badge, and a one-click Sign Out button.
-   - Conditionally exposes the "Admin Portal" navigation link exclusively to users with the `admin` role.
-5. **Persistent User Progress Sync (`user_progress` Table)**:
-   - When a student completes an educational milestone (reading a mind map, watching a lecture video, reviewing question bank items, finishing a quiz, or playing an educational game), progress is saved to SQLite via `POST /api/progress`.
-   - Client uses optimistic local storage caching so learning progress is never lost even if the connection momentarily blinks.
-6. **Student Attendance Auto-Fill**:
-   - When an authenticated student navigates to `pages/attendance.html`, their Full Name, Roll Number, Division, and PRN are auto-populated from their session profile, eliminating student typing errors and proxy issues.
+### Faculty Portal Protection (`pages/admin.html`)
+The Faculty Coordinator Portal is secured using an `ADMIN_KEY` environment secret:
+- Access to live attendance rosters, real-time student filtering, and official CSV exports is strictly protected via the `x-admin-key` header with constant-time verification (`crypto.timingSafeEqual`).
+- Daily Session Code manager allows faculty to enforce an optional one-time pass-code for attendance.
 
 ---
 
@@ -193,11 +177,10 @@ e-chemEd/
 ├── api/
 │   └── index.js                             # Vercel serverless function entry point
 ├── frontend/                                # All client-side files & assets
-│   ├── index.html                           # Main entry point (protected route)
-│   ├── pages/                               # Protected learning & faculty pages
-│   │   ├── login.html                       # Academic login page with role demo buttons
-│   │   ├── attendance.html                  # Auto-filled student attendance portal
-│   │   ├── admin.html                       # Faculty coordinator admin dashboard
+│   ├── index.html                           # Main entry point (open access)
+│   ├── pages/                               # Educational & faculty pages
+│   │   ├── attendance.html                  # Student attendance portal
+│   │   ├── admin.html                       # Faculty coordinator admin dashboard (protected by ADMIN_KEY)
 │   │   ├── unit.html                        # Unit syllabus and learning modules
 │   │   ├── mind-maps.html                   # Interactive visual syllabus mind maps
 │   │   ├── quizzes.html                     # Self-grading timed quizzes
@@ -231,7 +214,7 @@ e-chemEd/
 │   ├── package.json                         # Backend dependencies (engines >= 18.0.0)
 │   └── .env.example                         # Backend environment configuration template
 ├── scripts/
-│   ├── serve-frontend.js                    # Static HTTP server & server-side route guard (Port 3000)
+│   ├── serve-frontend.js                    # Static HTTP server with video streaming & API proxy (Port 3000)
 │   ├── check-ports.js                       # Port conflict validator
 │   ├── init-env.js                          # Auto-configuration of .env & ADMIN_KEY
 │   ├── init-postgres.js                     # PostgreSQL migration and seeding CLI tool

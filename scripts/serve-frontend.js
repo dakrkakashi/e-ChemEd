@@ -8,7 +8,8 @@
  * - Full HTTP 206 Range request support (essential for video seeking & MP4 streaming)
  * - Dynamic /config.json endpoint reporting backend port
  * - Transparent /api/ reverse-proxy to backend Express service
- * - Server-side route protection: redirects unauthenticated requests for protected HTML pages to /pages/login.html
+ * - Open access: all learning pages served without mandatory login
+ * - Legacy login redirect: redirects /login, /login.html, and /pages/login.html to /index.html
  * - Binds to 0.0.0.0 for seamless Wi-Fi LAN access
  */
 
@@ -154,9 +155,9 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
-  // Convenient alias: /login -> /pages/login.html
-  if (urlPath === '/login' || urlPath === '/login.html') {
-    res.writeHead(302, { 'Location': '/pages/login.html', 'Cache-Control': 'no-store' });
+  // Convenient redirect for legacy login links to home
+  if (urlPath === '/login' || urlPath === '/login.html' || urlPath === '/pages/login.html') {
+    res.writeHead(302, { 'Location': '/index.html', 'Cache-Control': 'no-store' });
     res.end();
     return;
   }
@@ -215,36 +216,7 @@ const server = http.createServer(async (req, res) => {
 
   const ext = path.extname(finalPath).toLowerCase();
 
-  // Route Protection for HTML pages
-  if (ext === '.html') {
-    const isLoginPage = finalPath.replace(/\\/g, '/').endsWith('/pages/login.html');
-    if (!isLoginPage) {
-      // Check session cookie or authorization header
-      const cookies = parseCookies(req.headers['cookie']);
-      let token = cookies.echemed_session || cookies.echemed_token;
 
-      if (!token && req.headers['authorization'] && req.headers['authorization'].startsWith('Bearer ')) {
-        token = req.headers['authorization'].slice(7).trim();
-      }
-
-      if (!token && req.headers['x-session-token']) {
-        token = req.headers['x-session-token'];
-      }
-
-      const isAuthenticated = await checkValidSession(token);
-
-      if (!isAuthenticated) {
-        const redirectParam = encodeURIComponent(urlPath);
-        res.writeHead(302, {
-          'Location': `/pages/login.html?redirect=${redirectParam}`,
-          'Cache-Control': 'no-store, no-cache, must-revalidate',
-          'Content-Type': 'text/html; charset=utf-8'
-        });
-        res.end(`<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0; url=/pages/login.html?redirect=${redirectParam}"></head><body>Redirecting to login...</body></html>`);
-        return;
-      }
-    }
-  }
 
   const contentType = MIME_TYPES[ext] || 'application/octet-stream';
   const stat = fs.statSync(finalPath);
@@ -303,7 +275,7 @@ server.listen(PORT, '0.0.0.0', () => {
   console.log(`=================================================`);
   console.log(`e-chemEd Frontend server listening on 0.0.0.0:${PORT}`);
   console.log(`Serving files strictly from: ${FRONTEND_DIR}`);
-  console.log(`Protected routes enforced: Unauthenticated HTML requests redirect to /pages/login.html`);
+  console.log(`Open access active: All educational pages served directly without login.`);
   console.log(`=================================================`);
 });
 
