@@ -6,10 +6,15 @@
  */
 
 const path = require('path');
-const dotenv = require('dotenv');
 
 // Attempt to load .env if present (e.g. during local vercel dev)
 try {
+  let dotenv;
+  try {
+    dotenv = require('dotenv');
+  } catch (e) {
+    dotenv = require('../backend/node_modules/dotenv');
+  }
   dotenv.config({ path: path.resolve(__dirname, '..', '.env') });
 } catch (e) {}
 
