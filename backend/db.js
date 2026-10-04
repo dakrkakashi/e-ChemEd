@@ -54,13 +54,16 @@ function verifyPassword(password, salt, storedHash) {
 // ---------------------------------------------------------------------------
 // IN-MEMORY RESILIENT STORE (Zero-setup cloud preview & fallback)
 // ---------------------------------------------------------------------------
+const defaultAdminPass = hashPassword('admin123');
+const defaultStudentPass = hashPassword('student123');
+
 const memoryStore = {
   users: [
     {
       id: 1,
       username: 'admin',
-      password_hash: hashPassword('admin123').hash,
-      salt: hashPassword('admin123').salt,
+      password_hash: defaultAdminPass.hash,
+      salt: defaultAdminPass.salt,
       role: 'admin',
       name: 'Dr. S. S. Chine',
       roll_no: null,
@@ -71,8 +74,8 @@ const memoryStore = {
     {
       id: 2,
       username: 'student',
-      password_hash: hashPassword('student123').hash,
-      salt: hashPassword('student123').salt,
+      password_hash: defaultStudentPass.hash,
+      salt: defaultStudentPass.salt,
       role: 'student',
       name: 'Rahul Shinde',
       roll_no: '101',
