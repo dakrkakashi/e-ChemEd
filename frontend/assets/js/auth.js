@@ -152,7 +152,16 @@
         body: JSON.stringify({ username, password })
       });
 
-      const data = await res.json();
+      let data = null;
+      try {
+        data = await res.json();
+      } catch (e) {
+        throw new Error(
+          res.status === 500
+            ? 'Server error: Database not connected. Please attach a Postgres database in your Vercel project Storage tab.'
+            : `Network error (${res.status}). Please try again.`
+        );
+      }
 
       if (!res.ok || !data.ok) {
         throw new Error(data.error || 'Authentication failed. Please check your username and password.');

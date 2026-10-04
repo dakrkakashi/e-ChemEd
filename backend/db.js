@@ -31,6 +31,9 @@ function getStmt(key, sql) {
     stmt = sqliteDb.prepare(sql);
     stmtCache.set(key, stmt);
   }
+  if (!stmt) {
+    throw new Error('Database is not connected. Please attach a Postgres database in your Vercel project Storage tab.');
+  }
   return stmt;
 }
 
@@ -166,85 +169,100 @@ async function ensurePgSchema() {
 // SQLITE ENGINE INITIALIZATION & SCHEMA
 // ---------------------------------------------------------------------------
 if (!isPostgres) {
-  const DB_DIR = path.resolve(__dirname, 'data');
-  if (!fs.existsSync(DB_DIR)) {
-    fs.mkdirSync(DB_DIR, { recursive: true });
-  }
-  const DB_PATH = path.join(DB_DIR, 'echemed.db');
-
   try {
-    const Database = require('better-sqlite3');
-    sqliteDb = new Database(DB_PATH);
-    sqliteDb.pragma('journal_mode = WAL');
-    sqliteDb.pragma('foreign_keys = ON');
-    sqliteDb.pragma('busy_timeout = 5000');
-    dbEngine = 'better-sqlite3';
-  } catch (err) {
+    let DB_DIR = path.resolve(__dirname, 'data');
     try {
-      const { DatabaseSync } = require('node:sqlite');
-      sqliteDb = new DatabaseSync(DB_PATH);
-      sqliteDb.exec('PRAGMA journal_mode = WAL;');
-      sqliteDb.exec('PRAGMA foreign_keys = ON;');
-      dbEngine = 'node:sqlite';
-    } catch (err2) {
-      console.error('Fatal: Failed to initialize SQLite database engine.');
-      console.error('better-sqlite3 error:', err.message);
-      console.error('node:sqlite error:', err2.message);
-      process.exit(1);
+      if (!fs.existsSync(DB_DIR)) {
+        fs.mkdirSync(DB_DIR, { recursive: true });
+      }
+    } catch (e) {
+      // In read-only environments (e.g., serverless /var/task), fall back to /tmp
+      DB_DIR = path.join('/tmp', 'echemed-data');
+      if (!fs.existsSync(DB_DIR)) {
+        fs.mkdirSync(DB_DIR, { recursive: true });
+      }
     }
+    const DB_PATH = path.join(DB_DIR, 'echemed.db');
+
+    try {
+      const Database = require('better-sqlite3');
+      sqliteDb = new Database(DB_PATH);
+      sqliteDb.pragma('journal_mode = WAL');
+      sqliteDb.pragma('foreign_keys = ON');
+      sqliteDb.pragma('busy_timeout = 5000');
+      dbEngine = 'better-sqlite3';
+    } catch (err) {
+      try {
+        const { DatabaseSync } = require('node:sqlite');
+        sqliteDb = new DatabaseSync(DB_PATH);
+        sqliteDb.exec('PRAGMA journal_mode = WAL;');
+        sqliteDb.exec('PRAGMA foreign_keys = ON;');
+        dbEngine = 'node:sqlite';
+      } catch (err2) {
+        dbEngine = 'unconfigured';
+        console.warn('[DB WARNING] Neither better-sqlite3 nor node:sqlite is available. Please connect a PostgreSQL database.');
+      }
+    }
+
+    if (sqliteDb) {
+      // Initialize SQLite schema
+      sqliteDb.exec(`
+        CREATE TABLE IF NOT EXISTS attendance (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          name TEXT NOT NULL,
+          rollNo TEXT NOT NULL,
+          division TEXT NOT NULL,
+          prn TEXT NOT NULL,
+          unit TEXT NOT NULL,
+          session TEXT NOT NULL,
+          date TEXT NOT NULL,
+          created_at TEXT NOT NULL,
+          CONSTRAINT unique_attendance UNIQUE (prn, unit, session, date)
+        );
+
+        CREATE TABLE IF NOT EXISTS settings (
+          key TEXT PRIMARY KEY,
+          value TEXT NOT NULL,
+          updated_at TEXT NOT NULL
+        );
+
+        CREATE TABLE IF NOT EXISTS users (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          username TEXT UNIQUE NOT NULL COLLATE NOCASE,
+          password_hash TEXT NOT NULL,
+          salt TEXT NOT NULL,
+          role TEXT NOT NULL CHECK(role IN ('admin', 'student')),
+          name TEXT NOT NULL,
+          roll_no TEXT,
+          division TEXT,
+          prn TEXT,
+          created_at TEXT NOT NULL
+        );
+
+        CREATE TABLE IF NOT EXISTS sessions (
+          token TEXT PRIMARY KEY,
+          user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          expires_at TEXT NOT NULL,
+          created_at TEXT NOT NULL,
+          last_active_at TEXT NOT NULL
+        );
+
+        CREATE TABLE IF NOT EXISTS user_progress (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          unit_id INTEGER NOT NULL,
+          activity_key TEXT NOT NULL,
+          completed_at TEXT NOT NULL,
+          CONSTRAINT unique_user_unit_activity UNIQUE (user_id, unit_id, activity_key)
+        );
+      `);
+
+      seedDefaultUsers();
+    }
+  } catch (initErr) {
+    console.warn('[DB WARNING] SQLite could not be initialized:', initErr.message);
+    dbEngine = 'unconfigured';
   }
-
-  // Initialize SQLite schema
-  sqliteDb.exec(`
-    CREATE TABLE IF NOT EXISTS attendance (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name TEXT NOT NULL,
-      rollNo TEXT NOT NULL,
-      division TEXT NOT NULL,
-      prn TEXT NOT NULL,
-      unit TEXT NOT NULL,
-      session TEXT NOT NULL,
-      date TEXT NOT NULL,
-      created_at TEXT NOT NULL,
-      CONSTRAINT unique_attendance UNIQUE (prn, unit, session, date)
-    );
-
-    CREATE TABLE IF NOT EXISTS settings (
-      key TEXT PRIMARY KEY,
-      value TEXT NOT NULL,
-      updated_at TEXT NOT NULL
-    );
-
-    CREATE TABLE IF NOT EXISTS users (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      username TEXT UNIQUE NOT NULL COLLATE NOCASE,
-      password_hash TEXT NOT NULL,
-      salt TEXT NOT NULL,
-      role TEXT NOT NULL CHECK(role IN ('admin', 'student')),
-      name TEXT NOT NULL,
-      roll_no TEXT,
-      division TEXT,
-      prn TEXT,
-      created_at TEXT NOT NULL
-    );
-
-    CREATE TABLE IF NOT EXISTS sessions (
-      token TEXT PRIMARY KEY,
-      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-      expires_at TEXT NOT NULL,
-      created_at TEXT NOT NULL,
-      last_active_at TEXT NOT NULL
-    );
-
-    CREATE TABLE IF NOT EXISTS user_progress (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-      unit_id INTEGER NOT NULL,
-      activity_key TEXT NOT NULL,
-      completed_at TEXT NOT NULL,
-      CONSTRAINT unique_user_unit_activity UNIQUE (user_id, unit_id, activity_key)
-    );
-  `);
 }
 
 /**
@@ -253,6 +271,9 @@ if (!isPostgres) {
 function seedDefaultUsers() {
   if (isPostgres) {
     return ensurePgSchema();
+  }
+  if (!sqliteDb) {
+    return;
   }
 
   const countStmt = getStmt('countUsers', 'SELECT COUNT(*) AS total FROM users');
@@ -274,11 +295,6 @@ function seedDefaultUsers() {
     const studentPass = hashPassword('student123');
     insertStmt.run('student', studentPass.hash, studentPass.salt, 'student', 'Rahul Shinde', '101', 'A (Computer)', '72183921B', now);
   }
-}
-
-// Initialise default users for SQLite synchronously on module load
-if (!isPostgres) {
-  seedDefaultUsers();
 }
 
 // ---------------------------------------------------------------------------
